@@ -1,5 +1,6 @@
 const int WE_MAX_BANS = 256;
 const String WE_BANLIST_PATH = "warfork-extended/banlist.txt";
+const uint WE_BAN_RELOAD_INTERVAL_MS = 2000;
 
 String[] weBanUnix( WE_MAX_BANS );
 String[] weBanSteamId( WE_MAX_BANS );
@@ -9,20 +10,11 @@ String[] weBanByUsername( WE_MAX_BANS );
 String[] weBanBySteamId( WE_MAX_BANS );
 String[] weBanReason( WE_MAX_BANS );
 int weBanCount = 0;
+uint weBanNextReload = 0;
 
 void WE_Ban_Clear()
 {
     weBanCount = 0;
-    for ( int i = 0; i < WE_MAX_BANS; i++ )
-    {
-        weBanUnix[i] = "";
-        weBanSteamId[i] = "";
-        weBanUsername[i] = "";
-        weBanClan[i] = "";
-        weBanByUsername[i] = "";
-        weBanBySteamId[i] = "";
-        weBanReason[i] = "";
-    }
 }
 
 bool WE_Ban_LooksLikeKvGarbage( const String &in line )
@@ -66,7 +58,7 @@ bool WE_Ban_ParseLine( const String &in line )
             continue;
         }
 
-        cur = WE_TrimLeftSpaces( cur );
+        cur = WE_Trim( cur );
         if ( field == 0 ) f0 = cur;
         else if ( field == 1 ) f1 = cur;
         else if ( field == 2 ) f2 = cur;
@@ -96,24 +88,18 @@ void WE_Ban_Reload()
 {
     WE_Ban_Clear();
     if ( !WE_FileExists( WE_BANLIST_PATH ) )
-        return; // read-only path — file is created on write
+        return;
 
     String data;
     if ( !WE_LoadFile( WE_BANLIST_PATH, data ) )
         return;
 
-    String line = "";
-    for ( uint i = 0; i <= data.len(); i++ )
+    String line;
+    uint pos = 0;
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < data.len() ) ? data.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != data.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() > 0 )
             WE_Ban_ParseLine( line );
-        line = "";
     }
 }
 
@@ -134,6 +120,8 @@ void WE_Ban_Write()
                  + "\n";
     }
     WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", content );
+    // Memory matches disk from this server; wait a full interval before re-reading.
+    weBanNextReload = levelTime + WE_BAN_RELOAD_INTERVAL_MS;
 }
 
 bool WE_Ban_IsSteamBanned( const String &in steamid )
@@ -172,7 +160,7 @@ bool WE_Ban_AddSteam( Client @actor, const String &in steamid, const String &in 
     weBanClan[weBanCount] = WE_SanitizeField( clan );
     weBanByUsername[weBanCount] = byName;
     weBanBySteamId[weBanCount] = bySteam;
-    weBanReason[weBanCount] = WE_SanitizeField( reason );
+    weBanReason[weBanCount] = reason;
     weBanCount++;
     WE_Ban_Write();
     return true;
@@ -206,13 +194,6 @@ void WE_Ban_RemoveIndex( int index )
         weBanReason[i] = weBanReason[i + 1];
     }
     weBanCount--;
-    weBanUnix[weBanCount] = "";
-    weBanSteamId[weBanCount] = "";
-    weBanUsername[weBanCount] = "";
-    weBanClan[weBanCount] = "";
-    weBanByUsername[weBanCount] = "";
-    weBanBySteamId[weBanCount] = "";
-    weBanReason[weBanCount] = "";
     WE_Ban_Write();
 }
 

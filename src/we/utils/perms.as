@@ -28,13 +28,6 @@ void WE_ExecServer( const String &in cmd )
     G_CmdExecute( cmd );
 }
 
-void WE_ExecClient( Client @client, const String &in cmd )
-{
-    if ( @client == null )
-        return;
-    client.execGameCommand( cmd );
-}
-
 void WE_KickClient( Client @client, const String &in reason )
 {
     if ( @client == null )

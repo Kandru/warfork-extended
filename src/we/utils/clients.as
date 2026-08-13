@@ -7,20 +7,9 @@ void WE_PrintPlayers( Client @client, bool includeSpectators )
     for ( int i = 0; i < maxClients; i++ )
     {
         Client @other = @G_GetClient( i );
-        if ( @other == null )
+        if ( !WE_ClientListed( other, includeSpectators ) )
             continue;
-        if ( other.state() < CS_SPAWNED )
-            continue;
-        if ( !includeSpectators && other.getEnt().team == TEAM_SPECTATOR )
-            continue;
-
-        String steamid = WE_SteamId( other );
-        String line = other.playerNum + ": " + other.name;
-        if ( steamid.len() > 0 )
-            line += " [" + steamid + "]";
-        else
-            line += " [no steam_id]";
-        client.printMessage( line + "\n" );
+        WE_PrintPlayerLineWithSteam( client, other );
     }
 }
 
@@ -82,7 +71,7 @@ bool WE_ClientNameEquals( Client @other, const String &in query )
     return WE_EqualsIgnoreCase( WE_StripColors( other.name ), query );
 }
 
-// Silent resolve. null if missing or not unique. Numeric slot wins when that client exists.
+// Silent resolve. null if missing or not unique. Numeric slot wins when that client is listed.
 Client @WE_FindClient( const String &in query, bool includeSpectators )
 {
     if ( query.len() == 0 )
@@ -91,7 +80,7 @@ Client @WE_FindClient( const String &in query, bool includeSpectators )
     if ( query.isNumerical() )
     {
         Client @byNum = @G_GetClient( query.toInt() );
-        if ( @byNum != null && @byNum.getEnt() != null )
+        if ( WE_ClientListed( byNum, includeSpectators ) )
             return byNum;
     }
 
@@ -117,9 +106,10 @@ Client @WE_FindClient( const String &in query, bool includeSpectators )
         }
     }
 
-    if ( matchCount == 1 )
+    int kind = WE_UniqueMatchKind( matchCount, exactCount );
+    if ( kind == WE_MATCH_UNIQUE )
         return found;
-    if ( exactCount == 1 )
+    if ( kind == WE_MATCH_EXACT )
         return exact;
     return null;
 }
@@ -128,10 +118,9 @@ bool WE_ClientQueryAmbiguous( const String &in query, bool includeSpectators )
 {
     if ( query.len() == 0 )
         return false;
-    if ( @WE_FindClient( query, includeSpectators ) != null )
-        return false;
 
     int matchCount = 0;
+    int exactCount = 0;
     for ( int i = 0; i < maxClients; i++ )
     {
         Client @other = @G_GetClient( i );
@@ -140,10 +129,10 @@ bool WE_ClientQueryAmbiguous( const String &in query, bool includeSpectators )
         if ( !WE_ClientNameMatches( other, query ) )
             continue;
         matchCount++;
-        if ( matchCount > 1 )
-            return true;
+        if ( WE_ClientNameEquals( other, query ) )
+            exactCount++;
     }
-    return false;
+    return WE_UniqueMatchKind( matchCount, exactCount ) == WE_MATCH_AMBIGUOUS;
 }
 
 void WE_PrintClientMatches( Client @to, const String &in query, bool includeSpectators )
@@ -189,8 +178,6 @@ bool WE_ClientSteamQueryAmbiguous( const String &in query, bool includeSpectator
 {
     if ( query.len() == 0 )
         return false;
-    if ( @WE_FindClientBySteamIdFragment( query, includeSpectators ) != null )
-        return false;
 
     int matchCount = 0;
     for ( int i = 0; i < maxClients; i++ )
@@ -230,14 +217,53 @@ Client @WE_ClientFromQuery( Client @actor, const String &in query, const String 
         return null;
     }
 
-    Client @target = @WE_FindClient( query, includeSpectators );
-    if ( @target != null )
-        return target;
+    if ( query.isNumerical() )
+    {
+        Client @byNum = @G_GetClient( query.toInt() );
+        if ( WE_ClientListed( byNum, includeSpectators ) )
+            return byNum;
+    }
 
-    if ( WE_ClientQueryAmbiguous( query, includeSpectators ) )
+    int matchCount = 0;
+    int exactCount = 0;
+    Client @found = null;
+    Client @exact = null;
+
+    for ( int i = 0; i < maxClients; i++ )
+    {
+        Client @other = @G_GetClient( i );
+        if ( !WE_ClientListed( other, includeSpectators ) )
+            continue;
+        if ( !WE_ClientNameMatches( other, query ) )
+            continue;
+
+        matchCount++;
+        @found = @other;
+        if ( WE_ClientNameEquals( other, query ) )
+        {
+            exactCount++;
+            @exact = @other;
+        }
+    }
+
+    int kind = WE_UniqueMatchKind( matchCount, exactCount );
+    if ( kind == WE_MATCH_UNIQUE )
+        return found;
+    if ( kind == WE_MATCH_EXACT )
+        return exact;
+
+    if ( kind == WE_MATCH_AMBIGUOUS )
     {
         actor.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
-        WE_PrintClientMatches( actor, query, includeSpectators );
+        for ( int i = 0; i < maxClients; i++ )
+        {
+            Client @other = @G_GetClient( i );
+            if ( !WE_ClientListed( other, includeSpectators ) )
+                continue;
+            if ( !WE_ClientNameMatches( other, query ) )
+                continue;
+            WE_PrintPlayerLine( actor, other );
+        }
         return null;
     }
 

@@ -61,7 +61,6 @@ WE_MODULES = (
     "utils/kv.as",
     "utils/perms.as",
     "utils/clients.as",
-    "utils/menu.as",
     "player/userinfo.as",
     "player/users.as",
     "player/player_data.as",

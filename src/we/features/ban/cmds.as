@@ -34,8 +34,14 @@ bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const Stri
         return true;
     }
 
-    String name = WE_UserGet( steamid, "name" );
-    String clan = WE_UserGet( steamid, "clan" );
+    String name = "";
+    String clan = "";
+    String data;
+    if ( WE_UserLoad( steamid, data ) )
+    {
+        name = WE_KvGet( data, "name" );
+        clan = WE_KvGet( data, "clan" );
+    }
 
     WE_Ban_Reload();
     if ( !WE_Ban_AddSteam( client, steamid, name, clan, reason ) )

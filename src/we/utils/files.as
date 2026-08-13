@@ -18,8 +18,3 @@ void WE_WriteFile( const String &in path, const String &in content )
 {
     G_WriteFile( path, content );
 }
-
-void WE_AppendFile( const String &in path, const String &in content )
-{
-    G_AppendToFile( path, content );
-}

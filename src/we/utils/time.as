@@ -1,11 +1,13 @@
-String WE_UnixTimestamp()
-{
-    return "" + ( localTime / 1000 );
-}
+// localTime is wall-clock unix seconds (engine time_t), not milliseconds.
 
 uint WE_UnixSeconds()
 {
-    return uint( localTime / 1000 );
+    return uint( localTime );
+}
+
+String WE_UnixTimestamp()
+{
+    return "" + WE_UnixSeconds();
 }
 
 bool WE_IsLeapYear( int year )

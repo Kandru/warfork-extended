@@ -1,30 +1,37 @@
 // key=value line helpers
 
-String WE_KvGet( const String &in data, const String &in key )
+bool WE_KvHasKey( const String &in data, const String &in key )
 {
-    String line = "";
-    for ( uint i = 0; i <= data.len(); i++ )
+    String line;
+    uint pos = 0;
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < data.len() ) ? data.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != data.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() == 0 )
             continue;
+        String k;
+        String v;
+        if ( !WE_SplitKeyValue( line, k, v ) )
+            continue;
+        if ( k == key )
+            return true;
+    }
+    return false;
+}
 
-        int eq = -1;
-        for ( uint j = 0; j < line.len(); j++ )
-        {
-            if ( line.substr( j, 1 ) != "=" )
-                continue;
-            eq = int( j );
-            break;
-        }
-        if ( eq > 0 && line.substr( 0, eq ) == key )
-            return line.substr( eq + 1, line.len() - ( eq + 1 ) );
-        line = "";
+String WE_KvGet( const String &in data, const String &in key )
+{
+    String line;
+    uint pos = 0;
+    while ( WE_NextLine( data, pos, line ) )
+    {
+        if ( line.len() == 0 )
+            continue;
+        String k;
+        String v;
+        if ( !WE_SplitKeyValue( line, k, v ) )
+            continue;
+        if ( k == key )
+            return v;
     }
     return "";
 }
@@ -33,29 +40,17 @@ String WE_KvSet( const String &in data, const String &in key, const String &in v
 {
     String result = "";
     bool replaced = false;
-    String line = "";
+    String line;
+    uint pos = 0;
 
-    for ( uint i = 0; i <= data.len(); i++ )
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < data.len() ) ? data.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != data.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() == 0 )
             continue;
 
-        int eq = -1;
-        for ( uint j = 0; j < line.len(); j++ )
-        {
-            if ( line.substr( j, 1 ) != "=" )
-                continue;
-            eq = int( j );
-            break;
-        }
-
-        if ( eq > 0 && line.substr( 0, eq ) == key )
+        String k;
+        String v;
+        if ( WE_SplitKeyValue( line, k, v ) && k == key )
         {
             result += key + "=" + value + "\n";
             replaced = true;
@@ -64,7 +59,6 @@ String WE_KvSet( const String &in data, const String &in key, const String &in v
         {
             result += line + "\n";
         }
-        line = "";
     }
 
     if ( !replaced )
@@ -72,36 +66,36 @@ String WE_KvSet( const String &in data, const String &in key, const String &in v
     return result;
 }
 
+// Keep data lines whose keys are not in blob; append all blob pairs.
 String WE_KvMergeBlob( const String &in data, const String &in blob )
 {
-    String result = data;
-    String line = "";
-    for ( uint i = 0; i <= blob.len(); i++ )
+    String result = "";
+    String line;
+    uint pos = 0;
+
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < blob.len() ) ? blob.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != blob.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() == 0 )
             continue;
 
-        int eq = -1;
-        for ( uint j = 0; j < line.len(); j++ )
-        {
-            if ( line.substr( j, 1 ) != "=" )
-                continue;
-            eq = int( j );
-            break;
-        }
-        if ( eq > 0 )
-        {
-            String k = line.substr( 0, eq );
-            String v = line.substr( eq + 1, line.len() - ( eq + 1 ) );
-            result = WE_KvSet( result, k, v );
-        }
-        line = "";
+        String k;
+        String v;
+        if ( WE_SplitKeyValue( line, k, v ) && WE_KvHasKey( blob, k ) )
+            continue;
+        result += line + "\n";
+    }
+
+    pos = 0;
+    while ( WE_NextLine( blob, pos, line ) )
+    {
+        if ( line.len() == 0 )
+            continue;
+
+        String k;
+        String v;
+        if ( !WE_SplitKeyValue( line, k, v ) )
+            continue;
+        result += k + "=" + v + "\n";
     }
     return result;
 }

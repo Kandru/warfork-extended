@@ -2,7 +2,6 @@
 
 const String WE_MSG_ADMIN_REQUIRED = S_COLOR_RED + "Operator privileges required.\n";
 const String WE_MSG_NO_SELF = S_COLOR_RED + "You cannot do that to yourself.\n";
-const String WE_MSG_DISABLED = S_COLOR_YELLOW + "warfork-extended is disabled (we_enabled 0).\n";
 const String WE_MSG_BAN_DISABLED = S_COLOR_YELLOW + "Ban feature disabled (we_feature_ban 0).\n";
 const String WE_MSG_WEAPON_DISABLED = S_COLOR_YELLOW + "Weapon feature disabled (we_feature_weapon 0).\n";
 const String WE_MSG_RESPAWN_DISABLED = S_COLOR_YELLOW + "Respawn feature disabled (we_feature_respawn 0).\n";

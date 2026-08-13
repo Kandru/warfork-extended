@@ -16,24 +16,11 @@ String WE_Locks_OwnerId()
     return ip + ":" + we_net_port.string;
 }
 
-String WE_Locks_Trim( const String &in text )
-{
-    String v = text;
-    while ( v.len() > 0 )
-    {
-        String last = v.substr( v.len() - 1, 1 );
-        if ( last != "\n" && last != "\r" && last != " " )
-            break;
-        v = v.substr( 0, v.len() - 1 );
-    }
-    return v;
-}
-
 // Parse "unix@owner" → unix out via return, owner via &out.
 uint WE_Locks_ParseValue( const String &in value, String &out owner )
 {
     owner = "";
-    String v = WE_Locks_Trim( value );
+    String v = WE_Trim( value );
     int at = -1;
     for ( uint i = 0; i < v.len(); i++ )
     {
@@ -66,36 +53,18 @@ String WE_Locks_Rebuild( const String &in data, const String &in dropName, bool 
 {
     String us = WE_Locks_OwnerId();
     String result = "";
-    String line = "";
+    String line;
+    uint pos = 0;
 
-    for ( uint i = 0; i <= data.len(); i++ )
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < data.len() ) ? data.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != data.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() == 0 )
             continue;
 
-        int eq = -1;
-        for ( uint j = 0; j < line.len(); j++ )
-        {
-            if ( line.substr( j, 1 ) != "=" )
-                continue;
-            eq = int( j );
-            break;
-        }
-        if ( eq <= 0 )
-        {
-            line = "";
+        String key;
+        String val;
+        if ( !WE_SplitKeyValue( line, key, val ) )
             continue;
-        }
-
-        String key = line.substr( 0, eq );
-        String val = line.substr( eq + 1, line.len() - ( eq + 1 ) );
-        line = "";
 
         if ( dropName.len() > 0 && key == dropName )
             continue;
@@ -103,7 +72,7 @@ String WE_Locks_Rebuild( const String &in data, const String &in dropName, bool 
         String owner;
         uint lockedAt = WE_Locks_ParseValue( val, owner );
         if ( !WE_Locks_IsActive( lockedAt, nowSec ) )
-            continue; // timed out → gone
+            continue;
         if ( dropOurOwned && owner == us )
             continue;
 
@@ -116,33 +85,23 @@ bool WE_Locks_Find( const String &in data, const String &in name, uint &out lock
 {
     lockedAt = 0;
     owner = "";
-    String line = "";
+    String line;
+    uint pos = 0;
 
-    for ( uint i = 0; i <= data.len(); i++ )
+    while ( WE_NextLine( data, pos, line ) )
     {
-        String ch = ( i < data.len() ) ? data.substr( i, 1 ) : "\n";
-        if ( ch != "\n" && ch != "\r" && i != data.len() )
-        {
-            line += ch;
-            continue;
-        }
         if ( line.len() == 0 )
             continue;
 
-        int eq = -1;
-        for ( uint j = 0; j < line.len(); j++ )
-        {
-            if ( line.substr( j, 1 ) != "=" )
-                continue;
-            eq = int( j );
-            break;
-        }
-        if ( eq > 0 && line.substr( 0, eq ) == name )
-        {
-            lockedAt = WE_Locks_ParseValue( line.substr( eq + 1, line.len() - ( eq + 1 ) ), owner );
-            return lockedAt > 0;
-        }
-        line = "";
+        String key;
+        String val;
+        if ( !WE_SplitKeyValue( line, key, val ) )
+            continue;
+        if ( key != name )
+            continue;
+
+        lockedAt = WE_Locks_ParseValue( val, owner );
+        return lockedAt > 0;
     }
     return false;
 }
@@ -161,13 +120,10 @@ bool WE_TryLock( const String &in name )
     String owner;
     if ( WE_Locks_Find( data, name, lockedAt, owner ) && WE_Locks_IsActive( lockedAt, nowSec ) )
     {
-        // Fresh lock held by someone else
         if ( owner != us )
             return false;
-        // Ours — refresh below
     }
 
-    // Timed out or missing or ours → take / override (removes old line via rebuild drop)
     data = WE_Locks_Rebuild( data, name, false, nowSec );
     data += name + "=" + nowSec + "@" + us + "\n";
     WE_WriteFile( WE_LOCKS_PATH, data );
@@ -182,7 +138,6 @@ void WE_Unlock( const String &in name )
     uint nowSec = WE_UnixSeconds();
     String data;
     WE_LoadFile( WE_LOCKS_PATH, data );
-    // Drop this name + purge timed-out leftovers
     data = WE_Locks_Rebuild( data, name, false, nowSec );
     WE_WriteFile( WE_LOCKS_PATH, data );
 }
@@ -205,7 +160,6 @@ void WE_Locks_ReleaseAll()
     String data;
     if ( !WE_LoadFile( WE_LOCKS_PATH, data ) )
         return;
-    // Remove our locks; drop timed-out lines from anyone
     data = WE_Locks_Rebuild( data, "", true, nowSec );
     WE_WriteFile( WE_LOCKS_PATH, data );
 }

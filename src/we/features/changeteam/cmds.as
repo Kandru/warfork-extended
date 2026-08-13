@@ -7,6 +7,20 @@ bool WE_ChangeTeam_IsJoinable( int teamId )
     return teamId == TEAM_PLAYERS;
 }
 
+void WE_ChangeTeam_PrintTeamLine( Client @to, int teamId, Team @team )
+{
+    if ( @to == null || @team == null )
+        return;
+    String line = teamId + ": ";
+    if ( team.name.len() > 0 )
+        line += team.name;
+    else
+        line += "?";
+    if ( team.defaultName.len() > 0 )
+        line += " (" + team.defaultName + ")";
+    to.printMessage( line + "\n" );
+}
+
 void WE_ChangeTeam_PrintTeams( Client @client )
 {
     client.printMessage( WE_MSG_TEAMS_HEADER );
@@ -50,20 +64,6 @@ bool WE_ChangeTeam_TextEquals( Team @team, const String &in query )
     return false;
 }
 
-void WE_ChangeTeam_PrintTeamLine( Client @to, int teamId, Team @team )
-{
-    if ( @to == null || @team == null )
-        return;
-    String line = teamId + ": ";
-    if ( team.name.len() > 0 )
-        line += team.name;
-    else
-        line += "?";
-    if ( team.defaultName.len() > 0 )
-        line += " (" + team.defaultName + ")";
-    to.printMessage( line + "\n" );
-}
-
 // Resolve team by id or unique name / defaultName fragment (e.g. "spec").
 // Returns -1 on failure (messages already printed).
 int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
@@ -105,12 +105,13 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
         }
     }
 
-    if ( matchCount == 1 )
+    int kind = WE_UniqueMatchKind( matchCount, exactCount );
+    if ( kind == WE_MATCH_UNIQUE )
         return foundId;
-    if ( exactCount == 1 )
+    if ( kind == WE_MATCH_EXACT )
         return exactId;
 
-    if ( matchCount > 1 )
+    if ( kind == WE_MATCH_AMBIGUOUS )
     {
         client.printMessage( WE_MSG_TEAM_AMBIGUOUS );
         for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )

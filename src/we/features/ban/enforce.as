@@ -1,6 +1,3 @@
-const uint WE_BAN_RELOAD_INTERVAL_MS = 2000;
-uint weBanNextReload = 0;
-
 void WE_Ban_CheckClient( Client @client )
 {
     if ( @client == null )
@@ -25,6 +22,9 @@ void WE_Ban_Think()
         WE_Ban_Reload();
         weBanNextReload = levelTime + WE_BAN_RELOAD_INTERVAL_MS;
     }
+
+    if ( weBanCount == 0 )
+        return;
 
     for ( int i = 0; i < maxClients; i++ )
     {
@@ -56,6 +56,7 @@ void WE_Ban_Init()
 
 void WE_Ban_Register()
 {
+    // we_kick stays available even when we_feature_ban is 0 (kick vs ban).
     WE_Hooks_AddThinkAfter( @WE_Ban_Think );
     WE_Hooks_AddScoreEventAfter( @WE_Ban_OnScoreEvent );
     WE_Cmds_Add( "we_kick", @WE_Cmd_Kick );

@@ -1,4 +1,4 @@
-const int WE_USERINFO_KEY_COUNT = 12;
+const int WE_USERINFO_KEY_COUNT = 11;
 
 String WE_SteamId( Client @client )
 {
@@ -24,9 +24,8 @@ String WE_UserInfoKeyName( int index )
     case 6: return "handicap";
     case 7: return "model";
     case 8: return "name";
-    case 9: return "password";
-    case 10: return "skin";
-    case 11: return "steam_id";
+    case 9: return "skin";
+    case 10: return "steam_id";
     }
     return "";
 }
