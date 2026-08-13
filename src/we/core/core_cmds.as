@@ -8,11 +8,6 @@ bool WE_Cmd_Users( Client @client, const String &argsString, int argc )
 {
     if ( !WE_RequireOperator( client ) )
         return true;
-    if ( we_feature_users.integer != 1 )
-    {
-        client.printMessage( WE_MSG_USERS_DISABLED );
-        return true;
-    }
     WE_PrintPlayers( client, true );
     return true;
 }

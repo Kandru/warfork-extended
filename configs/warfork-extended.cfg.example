@@ -7,8 +7,7 @@ set we_enabled "1"
 // Extra G_Print on GT_* wrappers except GT_ThinkRules (dev builds)
 set we_debug "0"
 
-// Feature toggles
-set we_feature_users "1"
+// Feature toggles (player/users is always on when we_enabled is 1)
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"

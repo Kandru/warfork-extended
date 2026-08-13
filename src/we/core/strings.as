@@ -3,7 +3,6 @@
 const String WE_MSG_ADMIN_REQUIRED = S_COLOR_RED + "Operator privileges required.\n";
 const String WE_MSG_NO_SELF = S_COLOR_RED + "You cannot do that to yourself.\n";
 const String WE_MSG_DISABLED = S_COLOR_YELLOW + "warfork-extended is disabled (we_enabled 0).\n";
-const String WE_MSG_USERS_DISABLED = S_COLOR_YELLOW + "Users feature disabled (we_feature_users 0).\n";
 const String WE_MSG_BAN_DISABLED = S_COLOR_YELLOW + "Ban feature disabled (we_feature_ban 0).\n";
 const String WE_MSG_WEAPON_DISABLED = S_COLOR_YELLOW + "Weapon feature disabled (we_feature_weapon 0).\n";
 const String WE_MSG_RESPAWN_DISABLED = S_COLOR_YELLOW + "Respawn feature disabled (we_feature_respawn 0).\n";
@@ -23,11 +22,13 @@ const String WE_MSG_KICK_USAGE = "usage: we_kick <userid> [reason]\n";
 const String WE_MSG_KICK_DONE = S_COLOR_GREEN + "Kicked.\n";
 const String WE_MSG_KICK_NOTIFY_PREFIX = S_COLOR_RED + "You were kicked. Reason: " + S_COLOR_WHITE;
 
-const String WE_MSG_BAN_USAGE = "usage: we_ban <userid> [reason]\n";
+const String WE_MSG_BAN_USAGE = "usage: we_ban <userid|steam_id> [reason]\n";
 const String WE_MSG_BAN_DONE = S_COLOR_GREEN + "Banned.\n";
 const String WE_MSG_BAN_FULL = S_COLOR_RED + "Ban list is full.\n";
 const String WE_MSG_BAN_NO_STEAM = S_COLOR_RED + "Target has no steam_id (ignored).\n";
 const String WE_MSG_BAN_NOTIFY_PREFIX = S_COLOR_RED + "You were banned. Reason: " + S_COLOR_WHITE;
+const String WE_MSG_RECENT_DISCONNECTS_HEADER = "\nRecently disconnected:\n";
+const String WE_MSG_RECENT_DISCONNECTS_NONE = "No recent disconnects.\n";
 
 const String WE_MSG_UNBAN_USAGE = "usage: we_unban <index>\n\nBanned players:\n";
 const String WE_MSG_UNBAN_NONE = "No players banned.\n";
@@ -56,7 +57,7 @@ const String WE_MSG_HELP =
     + "  we_help\n"
     + "  we_users\n"
     + "  we_kick <userid> [reason]\n"
-    + "  we_ban <userid> [reason]\n"
+    + "  we_ban <userid|steam_id> [reason]\n"
     + "  we_unban [index]\n"
     + "  we_weaponGive <userid> <weaponid>\n"
     + "  we_weaponRemove <userid> <weaponid>\n"

@@ -15,6 +15,7 @@ void WE_Init()
 void WE_Init_After()
 {
     WE_Cmds_RegisterEngine();
+    WE_Users_Init();
     WE_Ban_Init();
     G_Print( WE_MSG_INIT_PREFIX + WE_VERSION + WE_MSG_INIT_SUFFIX );
 }

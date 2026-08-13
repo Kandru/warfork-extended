@@ -8,7 +8,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
-- Per-player key/value files with userinfo snapshot + `last_connected`
+- Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
 ## Features (out of the box)
 
@@ -16,9 +16,9 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 |---------|-----|-------------|
 | `we_help` | everyone | List commands |
 | `we_users` | operator | List connected players + steam_id |
-| `we_kick <userid> [reason]` | operator | Kick a player |
-| `we_ban <userid> [reason]` | operator | Ban by steam_id + kick |
-| `we_unban [index]` | operator | List bans / remove by index |
+| `we_kick <userid> [reason]` | operator | Kick a player (list if no arg) |
+| `we_ban <userid|steam_id> [reason]` | operator | Ban player (list if no arg) |
+| `we_unban [index]` | operator | Unban player (list if no arg) |
 | `we_weaponGive <userid> <weaponid>` | operator | Give an item (id or unique name fragment) |
 | `we_weaponRemove <userid> <weaponid>` | operator | Remove an item (id or unique name fragment) |
 | `we_weaponStrip <userid>` | operator | Remove all weapons and ammo |
@@ -27,6 +27,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
+- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (human UTC time); pass a steam_id from that list to ban someone who already left
 - `weaponid` is an item tag, or a unique fragment of the item name / short name
 - `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
 
@@ -57,7 +58,6 @@ Paste cvars into your `server.cfg` (see [`configs/warfork-extended.cfg.example`]
 ```
 set we_enabled "1"
 set we_debug "0"
-set we_feature_users "1"
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"

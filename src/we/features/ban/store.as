@@ -149,12 +149,8 @@ bool WE_Ban_IsSteamBanned( const String &in steamid )
     return false;
 }
 
-bool WE_Ban_Add( Client @actor, Client @target, const String &in reason )
+bool WE_Ban_AddSteam( Client @actor, const String &in steamid, const String &in username, const String &in clan, const String &in reason )
 {
-    if ( @target == null )
-        return false;
-
-    String steamid = WE_SteamId( target );
     if ( steamid.len() == 0 )
         return false;
     if ( WE_Ban_IsSteamBanned( steamid ) )
@@ -172,14 +168,26 @@ bool WE_Ban_Add( Client @actor, Client @target, const String &in reason )
 
     weBanUnix[weBanCount] = WE_UnixTimestamp();
     weBanSteamId[weBanCount] = steamid;
-    weBanUsername[weBanCount] = WE_SanitizeField( target.name );
-    weBanClan[weBanCount] = WE_SanitizeField( target.clanName );
+    weBanUsername[weBanCount] = WE_SanitizeField( username );
+    weBanClan[weBanCount] = WE_SanitizeField( clan );
     weBanByUsername[weBanCount] = byName;
     weBanBySteamId[weBanCount] = bySteam;
     weBanReason[weBanCount] = WE_SanitizeField( reason );
     weBanCount++;
     WE_Ban_Write();
     return true;
+}
+
+bool WE_Ban_Add( Client @actor, Client @target, const String &in reason )
+{
+    if ( @target == null )
+        return false;
+
+    String steamid = WE_SteamId( target );
+    if ( steamid.len() == 0 )
+        return false;
+
+    return WE_Ban_AddSteam( actor, steamid, target.name, target.clanName, reason );
 }
 
 void WE_Ban_RemoveIndex( int index )

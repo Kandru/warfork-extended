@@ -19,7 +19,7 @@ String WE_PlayerDataKey( const String &in key )
 
 bool WE_PlayerDataEnabled()
 {
-    return ( we_enabled.integer == 1 && we_feature_users.integer == 1 );
+    return ( we_enabled.integer == 1 );
 }
 
 String WE_GetPlayerDataBySteamId( const String &in steamid, const String &in key )

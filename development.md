@@ -15,7 +15,7 @@ Each human player gets a file:
 
 `basewf/warfork-extended/users/<steamid>.txt`
 
-Lines are `key=value`. WE owns framework keys (userinfo snapshot, `last_connected`, …).
+Lines are `key=value`. WE owns framework keys (userinfo snapshot, `last_connected` / `last_connected_unix`, `last_disconnected` / `last_disconnected_unix`, …).
 
 ### Custom gamemode API
 
@@ -30,7 +30,7 @@ Use these helpers so you never clash with WE keys. Your key is stored as `cust_<
 
 Examples: key `bestScore` → file key `cust_bestScore`. Passing `cust_bestScore` is left unchanged.
 
-Requires `we_enabled 1` and `we_feature_users 1`.
+Requires `we_enabled 1` (player/users storage is always available when WE is on).
 
 ### Example — save / load a high score
 
@@ -103,6 +103,9 @@ String visits = WE_GetPlayerDataBySteamId( steamid, "visits" );
 basewf/warfork-extended/
   banlist.txt
   locks.txt
+  recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
   users/
     <steamid>.txt    # WE keys + cust_* keys
 ```
+
+`recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown.
