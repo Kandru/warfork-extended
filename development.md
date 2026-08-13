@@ -45,7 +45,7 @@ Install **both** pk3s in `basewf`:
 1. `gt_warfork_extended_<VERSION>.pk3` (stock wrapped GTs + WE sources)
 2. Your thin custom pk3
 
-Rebuild the custom pk3 when you bump WE if inject hooks (`ENGINE_HOOKS`) or include order change. Feature-only WE updates that keep the same paths usually work without a custom rebuild.
+Rebuild the custom pk3 when you bump WE if inject hooks (`ENGINE_HOOKS`) / wrapper dispatches or include order change. Feature-only WE updates that keep the same paths usually work without a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_MatchStateStarted` / `GT_PlayerRespawn` after-hooks), rebuild custom thin pk3s.
 
 ### Local debug (optional one-pk3 overlay)
 
@@ -192,7 +192,8 @@ For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (sa
 basewf/warfork-extended/
   banlist.txt
   report.txt               # player reports (append-only CSV)
-  awards.txt               # award catalog (load once per gametype init)
+  awards.txt               # award catalog: id|enabled|kind|freq|p1|p2|title|description
+                           # (load once per gametype init; freq=every|map|round|once)
   locks.txt
   recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
   users/

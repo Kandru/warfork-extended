@@ -5,12 +5,16 @@ WE_HookThinkAfterFn@[] weHookThinkAfter( WE_MAX_HOOKS );
 WE_HookScoreEventBeforeFn@[] weHookScoreBefore( WE_MAX_HOOKS );
 WE_HookScoreEventAfterFn@[] weHookScoreAfter( WE_MAX_HOOKS );
 WE_HookShutdownFn@[] weHookShutdown( WE_MAX_HOOKS );
+WE_HookMatchStateStartedAfterFn@[] weHookMatchStateStartedAfter( WE_MAX_HOOKS );
+WE_HookPlayerRespawnAfterFn@[] weHookPlayerRespawnAfter( WE_MAX_HOOKS );
 
 int weHookThinkBeforeCount = 0;
 int weHookThinkAfterCount = 0;
 int weHookScoreBeforeCount = 0;
 int weHookScoreAfterCount = 0;
 int weHookShutdownCount = 0;
+int weHookMatchStateStartedAfterCount = 0;
+int weHookPlayerRespawnAfterCount = 0;
 
 void WE_Hooks_AddThinkBefore( WE_HookThinkBeforeFn @fn )
 {
@@ -60,6 +64,26 @@ void WE_Hooks_AddShutdown( WE_HookShutdownFn @fn )
         return;
     @weHookShutdown[weHookShutdownCount] = fn;
     weHookShutdownCount++;
+}
+
+void WE_Hooks_AddMatchStateStartedAfter( WE_HookMatchStateStartedAfterFn @fn )
+{
+    if ( @fn == null )
+        return;
+    if ( weHookMatchStateStartedAfterCount >= WE_MAX_HOOKS )
+        return;
+    @weHookMatchStateStartedAfter[weHookMatchStateStartedAfterCount] = fn;
+    weHookMatchStateStartedAfterCount++;
+}
+
+void WE_Hooks_AddPlayerRespawnAfter( WE_HookPlayerRespawnAfterFn @fn )
+{
+    if ( @fn == null )
+        return;
+    if ( weHookPlayerRespawnAfterCount >= WE_MAX_HOOKS )
+        return;
+    @weHookPlayerRespawnAfter[weHookPlayerRespawnAfterCount] = fn;
+    weHookPlayerRespawnAfterCount++;
 }
 
 // true => skip GT_ThinkRules__orig
@@ -114,5 +138,25 @@ void WE_Hooks_DispatchShutdown()
         if ( @weHookShutdown[i] == null )
             continue;
         weHookShutdown[i]();
+    }
+}
+
+void WE_Hooks_DispatchMatchStateStartedAfter()
+{
+    for ( int i = 0; i < weHookMatchStateStartedAfterCount; i++ )
+    {
+        if ( @weHookMatchStateStartedAfter[i] == null )
+            continue;
+        weHookMatchStateStartedAfter[i]();
+    }
+}
+
+void WE_Hooks_DispatchPlayerRespawnAfter( Entity @ent, int old_team, int new_team )
+{
+    for ( int i = 0; i < weHookPlayerRespawnAfterCount; i++ )
+    {
+        if ( @weHookPlayerRespawnAfter[i] == null )
+            continue;
+        weHookPlayerRespawnAfter[i]( ent, old_team, new_team );
     }
 }

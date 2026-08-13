@@ -105,6 +105,32 @@ def generate_wrappers(mode: str, *, debug: bool) -> str:
             ]
             continue
 
+        if name == "GT_MatchStateStarted":
+            lines += [
+                "void GT_MatchStateStarted()",
+                "{",
+                *dbg_lines,
+                f"    {call};",
+                "    if ( we_enabled.integer == 1 )",
+                "        WE_Hooks_DispatchMatchStateStartedAfter();",
+                "}",
+                "",
+            ]
+            continue
+
+        if name == "GT_PlayerRespawn":
+            lines += [
+                "void GT_PlayerRespawn( Entity @ent, int old_team, int new_team )",
+                "{",
+                *dbg_lines,
+                f"    {call};",
+                "    if ( we_enabled.integer == 1 )",
+                "        WE_Hooks_DispatchPlayerRespawnAfter( ent, old_team, new_team );",
+                "}",
+                "",
+            ]
+            continue
+
         if rettype == "void":
             lines += [
                 f"void {name}({param_sig})",

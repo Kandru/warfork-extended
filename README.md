@@ -9,7 +9,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - SteamID-based player identity
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
 - Player reports (`we_report` / `report` → `report.txt`)
-- Custom awards (`award_*` counters, `we_awards` / `we_awardGive` / `we_awardRemove`)
+- Custom awards (`award_*` counters with every/map/round/once frequency, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
 ## Features (out of the box)
@@ -86,6 +86,17 @@ set we_feature_report "1"
 ```
 
 Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
+
+Line format: `id|enabled|kind|freq|p1|p2|title|description`
+
+| `freq` | Meaning |
+|--------|---------|
+| `every` | Grant whenever the trigger fires (after the kind’s own re-arm) |
+| `map` | At most once per gametype init / map |
+| `round` | At most once per **match playtime** (reset when playtime starts). CA/bomb intra-match rounds share one playtime, so this is once per match there |
+| `once` | Lifetime — skip if `award_<id>` is already &gt; 0 |
+
+`we_awardGive` ignores frequency. All duration parameters are **seconds** (including `fast_death` / `kill_then_die`). If you still have an older seeded `awards.txt`, add the `freq` column and convert former millisecond values (`5000` → `5`, `3000` → `3`).
 
 Player reports append to `basewf/warfork-extended/report.txt` (CSV: unix, reporter steam/name/clan, reported steam/name/clan, score/frags/deaths/suicides, reason). 60s cooldown per reporter.
 
