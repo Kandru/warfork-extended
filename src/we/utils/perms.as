@@ -9,7 +9,7 @@ bool WE_RequireOperator( Client @client )
 {
     if ( WE_IsOperator( client ) )
         return true;
-    client.printMessage( WE_MSG_ADMIN_REQUIRED );
+    WE_Print( client, WE_MSG_ADMIN_REQUIRED );
     return false;
 }
 
@@ -19,7 +19,7 @@ bool WE_RequireNotSelf( Client @actor, Client @target )
         return true;
     if ( actor.playerNum != target.playerNum )
         return true;
-    actor.printMessage( WE_MSG_NO_SELF );
+    WE_Print( actor, WE_MSG_NO_SELF );
     return false;
 }
 
@@ -33,6 +33,6 @@ void WE_KickClient( Client @client, const String &in reason )
     if ( @client == null )
         return;
     if ( reason.len() > 0 )
-        client.printMessage( WE_MSG_KICK_NOTIFY_PREFIX + reason + "\n" );
+        WE_Print( client, WE_MSG_KICK_NOTIFY_PREFIX + reason + "\n" );
     WE_ExecServer( "kick " + client.playerNum + "\n" );
 }

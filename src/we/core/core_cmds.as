@@ -1,6 +1,6 @@
 bool WE_Cmd_Help( Client @client, const String &argsString, int argc )
 {
-    client.printMessage( WE_MSG_HELP );
+    WE_Print( client, WE_MSG_HELP );
     return true;
 }
 

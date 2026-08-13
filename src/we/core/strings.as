@@ -1,5 +1,7 @@
 // English UI strings
 
+const String WE_MSG_PREFIX = "[WE] ";
+
 const String WE_MSG_ADMIN_REQUIRED = S_COLOR_RED + "Operator privileges required.\n";
 const String WE_MSG_NO_SELF = S_COLOR_RED + "You cannot do that to yourself.\n";
 const String WE_MSG_BAN_DISABLED = S_COLOR_YELLOW + "Ban feature disabled (we_feature_ban 0).\n";
@@ -7,9 +9,9 @@ const String WE_MSG_WEAPON_DISABLED = S_COLOR_YELLOW + "Weapon feature disabled 
 const String WE_MSG_RESPAWN_DISABLED = S_COLOR_YELLOW + "Respawn feature disabled (we_feature_respawn 0).\n";
 const String WE_MSG_CHANGETEAM_DISABLED = S_COLOR_YELLOW + "Changeteam feature disabled (we_feature_changeteam 0).\n";
 
-const String WE_MSG_PLAYERS_HEADER = "\nPlayers:\n";
-const String WE_MSG_ITEMS_HEADER = "\nItems:\n";
-const String WE_MSG_TEAMS_HEADER = "\nTeams:\n";
+const String WE_MSG_PLAYERS_HEADER = "Players:\n";
+const String WE_MSG_ITEMS_HEADER = "Items:\n";
+const String WE_MSG_TEAMS_HEADER = "Teams:\n";
 const String WE_MSG_NO_REASON = "no reason given";
 const String WE_MSG_PLAYER_AMBIGUOUS = S_COLOR_RED + "Ambiguous player (matches more than one). Be more specific.\n";
 const String WE_MSG_ITEM_AMBIGUOUS = S_COLOR_RED + "Ambiguous item (matches more than one). Be more specific.\n";
@@ -26,7 +28,7 @@ const String WE_MSG_BAN_DONE = S_COLOR_GREEN + "Banned.\n";
 const String WE_MSG_BAN_FULL = S_COLOR_RED + "Ban list is full.\n";
 const String WE_MSG_BAN_NO_STEAM = S_COLOR_RED + "Target has no steam_id (ignored).\n";
 const String WE_MSG_BAN_NOTIFY_PREFIX = S_COLOR_RED + "You were banned. Reason: " + S_COLOR_WHITE;
-const String WE_MSG_RECENT_DISCONNECTS_HEADER = "\nRecently disconnected:\n";
+const String WE_MSG_RECENT_DISCONNECTS_HEADER = "Recently disconnected:\n";
 const String WE_MSG_RECENT_DISCONNECTS_NONE = "No recent disconnects.\n";
 
 const String WE_MSG_UNBAN_USAGE = "usage: we_unban <index>\n\nBanned players:\n";
@@ -53,7 +55,7 @@ const String WE_MSG_CHANGETEAM_SAME = S_COLOR_YELLOW + "Player is already on tha
 const String WE_MSG_CHANGETEAM_INVALID = S_COLOR_RED + "Cannot join that team in this gametype.\n";
 
 const String WE_MSG_AWARDS_DISABLED = S_COLOR_YELLOW + "Awards feature disabled (we_feature_awards 0).\n";
-const String WE_MSG_AWARDS_HEADER = "\nYour awards:\n";
+const String WE_MSG_AWARDS_HEADER = "Your awards:\n";
 const String WE_MSG_AWARDS_NONE = S_COLOR_YELLOW + "No awards yet.\n";
 const String WE_MSG_AWARDS_NO_STEAM = S_COLOR_RED + "No steam_id (ignored).\n";
 const String WE_MSG_AWARD_GIVE_USAGE = "usage: we_awardGive <userid> <award_id>\n";

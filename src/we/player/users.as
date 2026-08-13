@@ -393,7 +393,7 @@ void WE_RecentDisconnects_PrintLineFromData( Client @to, const String &in steami
     if ( when.len() == 0 )
         when = "?";
 
-    to.printMessage( name + " [" + steamid + "] " + when + "\n" );
+    WE_Print( to, name + " [" + steamid + "] " + when + "\n" );
 }
 
 void WE_RecentDisconnects_PrintLine( Client @to, const String &in steamid )
@@ -530,11 +530,11 @@ void WE_RecentDisconnects_Print( Client @client )
     if ( @client == null )
         return;
 
-    client.printMessage( WE_MSG_RECENT_DISCONNECTS_HEADER );
+    WE_Print( client, WE_MSG_RECENT_DISCONNECTS_HEADER );
 
     if ( WE_RecentDisconnects_LoadListed() <= 0 )
     {
-        client.printMessage( WE_MSG_RECENT_DISCONNECTS_NONE );
+        WE_Print( client, WE_MSG_RECENT_DISCONNECTS_NONE );
         return;
     }
 

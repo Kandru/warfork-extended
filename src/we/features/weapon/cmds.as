@@ -8,12 +8,12 @@ void WE_Weapon_PrintItemLine( Client @to, Item @item )
     String shortN = item.shortName;
     if ( shortN.len() > 0 )
         line += " (" + shortN + ")";
-    to.printMessage( line + "\n" );
+    WE_Print( to, line + "\n" );
 }
 
 void WE_Weapon_PrintItems( Client @client )
 {
-    client.printMessage( WE_MSG_ITEMS_HEADER );
+    WE_Print( client, WE_MSG_ITEMS_HEADER );
     for ( int i = 1; i < WE_ITEM_TAG_MAX; i++ )
     {
         Item @item = @G_GetItem( i );
@@ -27,7 +27,7 @@ void WE_Weapon_PrintItems( Client @client )
 
 void WE_Weapon_PrintUsage( Client @client, const String &in usage )
 {
-    client.printMessage( usage );
+    WE_Print( client, usage );
     WE_PrintPlayers( client, true );
     WE_Weapon_PrintItems( client );
 }
@@ -104,7 +104,7 @@ Item @WE_Weapon_ItemFromQuery( Client @client, const String &in query )
 
     if ( kind == WE_MATCH_AMBIGUOUS )
     {
-        client.printMessage( WE_MSG_ITEM_AMBIGUOUS );
+        WE_Print( client, WE_MSG_ITEM_AMBIGUOUS );
         for ( int i = 1; i < WE_ITEM_TAG_MAX; i++ )
         {
             Item @item = @G_GetItem( i );
@@ -117,7 +117,7 @@ Item @WE_Weapon_ItemFromQuery( Client @client, const String &in query )
         return null;
     }
 
-    client.printMessage( WE_MSG_ITEM_NOT_FOUND );
+    WE_Print( client, WE_MSG_ITEM_NOT_FOUND );
     WE_Weapon_PrintItems( client );
     return null;
 }
@@ -192,7 +192,7 @@ bool WE_Cmd_WeaponGive( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_weapon.integer != 1 )
     {
-        client.printMessage( WE_MSG_WEAPON_DISABLED );
+        WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -208,7 +208,7 @@ bool WE_Cmd_WeaponGive( Client @client, const String &argsString, int argc )
     if ( ( item.type & IT_WEAPON ) != 0 )
         target.selectWeapon( item.tag );
 
-    client.printMessage( WE_MSG_WEAPON_GIVE_DONE );
+    WE_Print( client, WE_MSG_WEAPON_GIVE_DONE );
     return true;
 }
 
@@ -216,7 +216,7 @@ bool WE_Cmd_WeaponRemove( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_weapon.integer != 1 )
     {
-        client.printMessage( WE_MSG_WEAPON_DISABLED );
+        WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -232,7 +232,7 @@ bool WE_Cmd_WeaponRemove( Client @client, const String &argsString, int argc )
     if ( ( item.type & IT_WEAPON ) != 0 )
         WE_Weapon_SelectFallback( target, tag );
 
-    client.printMessage( WE_MSG_WEAPON_REMOVE_DONE );
+    WE_Print( client, WE_MSG_WEAPON_REMOVE_DONE );
     return true;
 }
 
@@ -260,7 +260,7 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_weapon.integer != 1 )
     {
-        client.printMessage( WE_MSG_WEAPON_DISABLED );
+        WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -271,7 +271,7 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
         return true;
 
     WE_Weapon_Strip( target );
-    client.printMessage( WE_MSG_WEAPON_STRIP_DONE );
+    WE_Print( client, WE_MSG_WEAPON_STRIP_DONE );
     return true;
 }
 

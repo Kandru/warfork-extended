@@ -3,7 +3,7 @@
 
 void WE_PrintPlayers( Client @client, bool includeSpectators )
 {
-    client.printMessage( WE_MSG_PLAYERS_HEADER );
+    WE_Print( client, WE_MSG_PLAYERS_HEADER );
     for ( int i = 0; i < maxClients; i++ )
     {
         Client @other = @G_GetClient( i );
@@ -30,7 +30,7 @@ void WE_PrintPlayerLine( Client @to, Client @other )
 {
     if ( @to == null || @other == null )
         return;
-    to.printMessage( other.playerNum + ": " + other.name + "\n" );
+    WE_Print( to, other.playerNum + ": " + other.name + "\n" );
 }
 
 void WE_PrintPlayerLineWithSteam( Client @to, Client @other )
@@ -44,7 +44,7 @@ void WE_PrintPlayerLineWithSteam( Client @to, Client @other )
         line += " [" + steamid + "]";
     else
         line += " [no steam_id]";
-    to.printMessage( line + "\n" );
+    WE_Print( to, line + "\n" );
 }
 
 bool WE_ClientSteamMatches( Client @other, const String &in query )
@@ -212,7 +212,7 @@ Client @WE_ClientFromQuery( Client @actor, const String &in query, const String 
 {
     if ( query.len() == 0 )
     {
-        actor.printMessage( usage );
+        WE_Print( actor, usage );
         WE_PrintPlayers( actor, includeSpectators );
         return null;
     }
@@ -254,7 +254,7 @@ Client @WE_ClientFromQuery( Client @actor, const String &in query, const String 
 
     if ( kind == WE_MATCH_AMBIGUOUS )
     {
-        actor.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Print( actor, WE_MSG_PLAYER_AMBIGUOUS );
         for ( int i = 0; i < maxClients; i++ )
         {
             Client @other = @G_GetClient( i );
@@ -267,7 +267,7 @@ Client @WE_ClientFromQuery( Client @actor, const String &in query, const String 
         return null;
     }
 
-    actor.printMessage( usage );
+    WE_Print( actor, usage );
     WE_PrintPlayers( actor, includeSpectators );
     return null;
 }

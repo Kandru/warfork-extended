@@ -18,12 +18,12 @@ void WE_ChangeTeam_PrintTeamLine( Client @to, int teamId, Team @team )
         line += "?";
     if ( team.defaultName.len() > 0 )
         line += " (" + team.defaultName + ")";
-    to.printMessage( line + "\n" );
+    WE_Print( to, line + "\n" );
 }
 
 void WE_ChangeTeam_PrintTeams( Client @client )
 {
-    client.printMessage( WE_MSG_TEAMS_HEADER );
+    WE_Print( client, WE_MSG_TEAMS_HEADER );
     for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
     {
         if ( !WE_ChangeTeam_IsJoinable( t ) )
@@ -37,7 +37,7 @@ void WE_ChangeTeam_PrintTeams( Client @client )
 
 void WE_ChangeTeam_PrintUsage( Client @client )
 {
-    client.printMessage( WE_MSG_CHANGETEAM_USAGE );
+    WE_Print( client, WE_MSG_CHANGETEAM_USAGE );
     WE_PrintPlayers( client, true );
     WE_ChangeTeam_PrintTeams( client );
 }
@@ -76,7 +76,7 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
         int id = query.toInt();
         if ( WE_ChangeTeam_IsJoinable( id ) && @G_GetTeam( id ) != null )
             return id;
-        client.printMessage( WE_MSG_CHANGETEAM_INVALID );
+        WE_Print( client, WE_MSG_CHANGETEAM_INVALID );
         WE_ChangeTeam_PrintTeams( client );
         return -1;
     }
@@ -113,7 +113,7 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
 
     if ( kind == WE_MATCH_AMBIGUOUS )
     {
-        client.printMessage( WE_MSG_TEAM_AMBIGUOUS );
+        WE_Print( client, WE_MSG_TEAM_AMBIGUOUS );
         for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
         {
             if ( !WE_ChangeTeam_IsJoinable( t ) )
@@ -128,7 +128,7 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
         return -1;
     }
 
-    client.printMessage( WE_MSG_TEAM_NOT_FOUND );
+    WE_Print( client, WE_MSG_TEAM_NOT_FOUND );
     WE_ChangeTeam_PrintTeams( client );
     return -1;
 }
@@ -137,7 +137,7 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_changeteam.integer != 1 )
     {
-        client.printMessage( WE_MSG_CHANGETEAM_DISABLED );
+        WE_Print( client, WE_MSG_CHANGETEAM_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -173,7 +173,7 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
 
     if ( target.team == teamId && ent.team == teamId )
     {
-        client.printMessage( WE_MSG_CHANGETEAM_SAME );
+        WE_Print( client, WE_MSG_CHANGETEAM_SAME );
         return true;
     }
 
@@ -184,8 +184,8 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
     if ( @ent != null )
         ent.spawnqueueAdd();
 
-    target.printMessage( WE_MSG_CHANGETEAM_NOTIFY );
-    client.printMessage( WE_MSG_CHANGETEAM_DONE );
+    WE_Print( target, WE_MSG_CHANGETEAM_NOTIFY );
+    WE_Print( client, WE_MSG_CHANGETEAM_DONE );
     return true;
 }
 

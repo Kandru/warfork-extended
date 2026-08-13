@@ -207,9 +207,9 @@ void WE_Ban_PrintList( Client @client )
         String entry = i + ": " + weBanSteamId[i] + " " + weBanUsername[i];
         if ( weBanReason[i].len() > 0 )
             entry += " (" + weBanReason[i] + ")";
-        client.printMessage( entry + "\n" );
+        WE_Print( client, entry + "\n" );
         shown++;
     }
     if ( shown == 0 )
-        client.printMessage( WE_MSG_UNBAN_NONE );
+        WE_Print( client, WE_MSG_UNBAN_NONE );
 }

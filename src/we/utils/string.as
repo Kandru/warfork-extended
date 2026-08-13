@@ -3,6 +3,13 @@ const int WE_MATCH_UNIQUE = 1;
 const int WE_MATCH_EXACT = 2;
 const int WE_MATCH_AMBIGUOUS = 3;
 
+void WE_Print( Client @client, const String &in msg )
+{
+    if ( @client == null )
+        return;
+    client.printMessage( WE_MSG_PREFIX + msg );
+}
+
 String WE_StripColors( const String &in text )
 {
     return text.removeColorTokens();

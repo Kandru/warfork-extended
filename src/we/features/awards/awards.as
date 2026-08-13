@@ -368,7 +368,7 @@ void WE_Awards_GrantIndex( Client @client, int index )
     WE_UserSet( steamid, key, "" + count );
 
     String title = weAwardTitle[index];
-    client.printMessage( S_COLOR_YELLOW + "Award: " + S_COLOR_WHITE + title
+    WE_Print( client, S_COLOR_YELLOW + "Award: " + S_COLOR_WHITE + title
                          + S_COLOR_YELLOW + " (x" + count + ")\n" );
     G_Print( WE_StripColors( client.name ) + " earned award: " + title + " (x" + count + ")\n" );
 }
@@ -420,10 +420,10 @@ bool WE_Awards_RemoveIndex( Client @client, int index )
 
     String title = weAwardTitle[index];
     if ( count > 0 )
-        client.printMessage( S_COLOR_YELLOW + "Award removed: " + S_COLOR_WHITE + title
+        WE_Print( client, S_COLOR_YELLOW + "Award removed: " + S_COLOR_WHITE + title
                              + S_COLOR_YELLOW + " (now x" + count + ")\n" );
     else
-        client.printMessage( S_COLOR_YELLOW + "Award removed: " + S_COLOR_WHITE + title + "\n" );
+        WE_Print( client, S_COLOR_YELLOW + "Award removed: " + S_COLOR_WHITE + title + "\n" );
     return true;
 }
 

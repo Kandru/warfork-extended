@@ -14,13 +14,13 @@ bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
         reason = WE_MSG_NO_REASON;
 
     WE_KickClient( target, reason );
-    client.printMessage( WE_MSG_KICK_DONE );
+    WE_Print( client, WE_MSG_KICK_DONE );
     return true;
 }
 
 void WE_Cmd_Ban_PrintTargets( Client @client )
 {
-    client.printMessage( WE_MSG_BAN_USAGE );
+    WE_Print( client, WE_MSG_BAN_USAGE );
     WE_PrintPlayers( client, true );
     WE_RecentDisconnects_Print( client );
 }
@@ -30,7 +30,7 @@ bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const Stri
     String actorSteam = WE_SteamId( client );
     if ( actorSteam.len() > 0 && actorSteam == steamid )
     {
-        client.printMessage( WE_MSG_NO_SELF );
+        WE_Print( client, WE_MSG_NO_SELF );
         return true;
     }
 
@@ -46,18 +46,18 @@ bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const Stri
     WE_Ban_Reload();
     if ( !WE_Ban_AddSteam( client, steamid, name, clan, reason ) )
     {
-        client.printMessage( WE_MSG_BAN_FULL );
+        WE_Print( client, WE_MSG_BAN_FULL );
         return true;
     }
 
     Client @online = @WE_FindClientBySteamId( steamid );
     if ( @online != null )
     {
-        online.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
+        WE_Print( online, WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
         WE_KickClient( online, reason );
     }
 
-    client.printMessage( WE_MSG_BAN_DONE );
+    WE_Print( client, WE_MSG_BAN_DONE );
     return true;
 }
 
@@ -67,20 +67,20 @@ bool WE_Cmd_Ban_ApplyClient( Client @client, Client @target, const String &in re
         return true;
     if ( WE_SteamId( target ).len() == 0 )
     {
-        client.printMessage( WE_MSG_BAN_NO_STEAM );
+        WE_Print( client, WE_MSG_BAN_NO_STEAM );
         return true;
     }
 
     WE_Ban_Reload();
     if ( !WE_Ban_Add( client, target, reason ) )
     {
-        client.printMessage( WE_MSG_BAN_FULL );
+        WE_Print( client, WE_MSG_BAN_FULL );
         return true;
     }
 
-    target.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
+    WE_Print( target, WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
     WE_KickClient( target, reason );
-    client.printMessage( WE_MSG_BAN_DONE );
+    WE_Print( client, WE_MSG_BAN_DONE );
     return true;
 }
 
@@ -88,7 +88,7 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_ban.integer != 1 )
     {
-        client.printMessage( WE_MSG_BAN_DISABLED );
+        WE_Print( client, WE_MSG_BAN_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -111,7 +111,7 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     if ( WE_ClientQueryAmbiguous( query, true ) )
     {
-        client.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
         WE_PrintClientMatches( client, query, true );
         return true;
     }
@@ -125,7 +125,7 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     if ( steamAmbiguous )
     {
-        client.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
         WE_PrintClientSteamMatches( client, query, true );
         WE_RecentDisconnects_PrintMatchesBy( client, query, false );
         return true;
@@ -142,7 +142,7 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     if ( WE_RecentDisconnects_QueryAmbiguousBy( query, true ) )
     {
-        client.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
         WE_RecentDisconnects_PrintMatchesBy( client, query, true );
         return true;
     }
@@ -159,7 +159,7 @@ bool WE_Cmd_Unban( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_ban.integer != 1 )
     {
-        client.printMessage( WE_MSG_BAN_DISABLED );
+        WE_Print( client, WE_MSG_BAN_DISABLED );
         return true;
     }
     if ( !WE_RequireOperator( client ) )
@@ -168,7 +168,7 @@ bool WE_Cmd_Unban( Client @client, const String &argsString, int argc )
     WE_Ban_Reload();
     if ( argsString == "" || !argsString.getToken( 0 ).isNumerical() )
     {
-        client.printMessage( WE_MSG_UNBAN_USAGE );
+        WE_Print( client, WE_MSG_UNBAN_USAGE );
         WE_Ban_PrintList( client );
         return true;
     }
@@ -176,11 +176,11 @@ bool WE_Cmd_Unban( Client @client, const String &argsString, int argc )
     int index = argsString.getToken( 0 ).toInt();
     if ( index < 0 || index >= weBanCount || weBanSteamId[index].len() == 0 )
     {
-        client.printMessage( WE_MSG_UNBAN_BAD_INDEX );
+        WE_Print( client, WE_MSG_UNBAN_BAD_INDEX );
         return true;
     }
 
     WE_Ban_RemoveIndex( index );
-    client.printMessage( WE_MSG_UNBAN_DONE );
+    WE_Print( client, WE_MSG_UNBAN_DONE );
     return true;
 }
