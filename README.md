@@ -83,10 +83,16 @@ set we_feature_weapon "1"
 set we_feature_respawn "1"
 set we_feature_changeteam "1"
 set we_feature_awards "1"
+set we_awards_center_message "1"
+set we_awards_chat_message "1"
 set we_feature_report "1"
 ```
 
 Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
+
+`we_awards_center_message` (default `1`) shows the grant on the HUD award position (`addAward`). `we_awards_chat_message` (default `1`) announces in chat: the recipient sees the same award text prefixed with `[WE]`; everyone else sees `[WE] <name> got the award: <title>`.
+
+Full kind / filter / limitation reference: [`awards.md`](awards.md).
 
 Line format: `id|enabled|kind|freq|p1|p2|title|description`
 

@@ -57,6 +57,7 @@ const String WE_MSG_AWARD_REMOVE_USAGE = "usage: we_awardRemove <userid> <award_
 const String WE_MSG_AWARD_REMOVE_DONE = S_COLOR_GREEN + "Award removed.\n";
 const String WE_MSG_AWARD_REMOVE_NONE = S_COLOR_YELLOW + "Player does not have that award.\n";
 const String WE_MSG_AWARD_UNKNOWN = S_COLOR_RED + "Unknown award id.\n";
+const String WE_MSG_AWARD_CHAT_GOT = S_COLOR_WHITE + " got the award: ";
 
 const String WE_MSG_REPORT_DISABLED = S_COLOR_YELLOW + "Report feature disabled (we_feature_report 0).\n";
 const String WE_MSG_REPORT_USAGE = "usage: report <userid> [reason]\n";

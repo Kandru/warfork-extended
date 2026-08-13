@@ -2,6 +2,8 @@
 
 This document is for authors of **custom gamemodes** (and WE features) that need persistent per-player data.
 
+Award catalog kinds, filters (`WEAP_*` / `AMMO_*` / `KEYICON_*`), frequency, and engine limitations: see [`awards.md`](awards.md).
+
 ## Build & layout reminder
 
 Custom gametypes ship as a **separate thin pk3**. They must be inject-built so their `.gt` include list pulls in WE + wrappers; Warfork compiles one AngelScript module per `.gt` (no cross-pk3 function calls).
@@ -226,6 +228,7 @@ basewf/warfork-extended/
   theme.txt                # console colors (role=colorname); seeded if missing
   awards.txt               # award catalog: id|enabled|kind|freq|p1|p2|title|description
                            # (load once per gametype init; freq=every|map|round|once)
+                           # kinds/filters/limits: see awards.md in the repo root
   locks.txt
   recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
   users/
