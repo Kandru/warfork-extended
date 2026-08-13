@@ -155,8 +155,9 @@ class WE_Reply
         for ( int r = 0; r < weReplyTableRows; r++ )
         {
             bool isHeader = ( r == 0 );
+            // Match visible width of data-row "- " so columns line up.
             if ( isHeader )
-                this.text += header;
+                this.text += "  " + header;
             else
                 this.text += marker + "- " + body;
 
@@ -183,6 +184,9 @@ class WE_Reply
             this.text += "\n";
         }
 
+        // Blank line before the next section / table.
+        this.text += "\n";
+
         weReplyTableCols = 0;
         weReplyTableRows = 0;
     }
@@ -194,6 +198,14 @@ class WE_Reply
             return;
         if ( this.text.len() == 0 )
             return;
+
+        // Drop trailing blank lines from the post-table spacer.
+        while ( this.text.len() >= 2
+            && this.text.substr( this.text.len() - 2, 2 ) == "\n\n" )
+        {
+            this.text = this.text.substr( 0, this.text.len() - 1 );
+        }
+
         WE_Print( client, this.text );
     }
 }
