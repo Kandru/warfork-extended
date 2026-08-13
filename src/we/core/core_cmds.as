@@ -13,7 +13,7 @@ bool WE_Cmd_Users( Client @client, const String &argsString, int argc )
         client.printMessage( WE_MSG_USERS_DISABLED );
         return true;
     }
-    WE_Menu_PrintPlayers( client, true );
+    WE_PrintPlayers( client, true );
     return true;
 }
 

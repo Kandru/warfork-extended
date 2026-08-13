@@ -93,6 +93,8 @@ String visits = WE_GetPlayerDataBySteamId( steamid, "visits" );
 |----------|--------|
 | `WE_SteamId( client )` | SteamID64 string, or "" |
 | `WE_StripColors( text )` | Name without color codes |
+| `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |
+| `WE_ClientFromArg( actor, argsString, usage, includeSpectators )` | Same, first token; prints usage / player list / matches |
 | `WE_Hooks_Add*` / `WE_Cmds_Add` | For framework features under `src/we/` |
 
 ## Files on disk (operators)

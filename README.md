@@ -7,7 +7,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Injects hooks around engine `GT_*` callbacks
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
-- Operator tools: kick, ban/unban
+- Operator tools: kick, ban/unban, give/remove/strip weapons
 - Per-player key/value files with userinfo snapshot + `last_connected`
 
 ## Features (out of the box)
@@ -16,9 +16,16 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 |---------|-----|-------------|
 | `we_help` | everyone | List commands |
 | `we_users` | operator | List connected players + steam_id |
-| `we_kick <playerNum> [reason]` | operator | Kick a player |
-| `we_ban <playerNum> [reason]` | operator | Ban by steam_id + kick |
+| `we_kick <userid> [reason]` | operator | Kick a player |
+| `we_ban <userid> [reason]` | operator | Ban by steam_id + kick |
 | `we_unban [index]` | operator | List bans / remove by index |
+| `we_weaponGive <userid> <weaponid>` | operator | Give an item (id or unique name fragment) |
+| `we_weaponRemove <userid> <weaponid>` | operator | Remove an item (id or unique name fragment) |
+| `we_weaponStrip <userid>` | operator | Remove all weapons and ammo |
+
+- `reason` is optional
+- `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
+- `weaponid` is an item tag, or a unique fragment of the item name / short name
 
 ## Requirements
 
@@ -49,6 +56,7 @@ set we_enabled "1"
 set we_debug "0"
 set we_feature_users "1"
 set we_feature_ban "1"
+set we_feature_weapon "1"
 ```
 
 ## Extending (features)

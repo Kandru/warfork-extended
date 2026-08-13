@@ -3,7 +3,7 @@ bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
     if ( !WE_RequireOperator( client ) )
         return true;
 
-    Client @target = @WE_Menu_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true );
     if ( @target == null )
         return true;
     if ( !WE_RequireNotSelf( client, target ) )
@@ -28,7 +28,7 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
     if ( !WE_RequireOperator( client ) )
         return true;
 
-    Client @target = @WE_Menu_ClientFromArg( client, argsString, WE_MSG_BAN_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_BAN_USAGE, true );
     if ( @target == null )
         return true;
     if ( !WE_RequireNotSelf( client, target ) )

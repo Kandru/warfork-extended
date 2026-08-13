@@ -7,6 +7,7 @@ void WE_Init()
     WE_CoreCmds_Register();
     WE_Users_Register();
     WE_Ban_Register();
+    WE_Weapon_Register();
 }
 
 void WE_Init_After()

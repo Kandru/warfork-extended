@@ -65,3 +65,26 @@ String WE_TrimLeftSpaces( const String &in text )
         cur = cur.substr( 1, cur.len() - 1 );
     return cur;
 }
+
+bool WE_EqualsIgnoreCase( const String &in a, const String &in b )
+{
+    return a.tolower() == b.tolower();
+}
+
+bool WE_ContainsIgnoreCase( const String &in haystack, const String &in needle )
+{
+    String h = haystack.tolower();
+    String n = needle.tolower();
+    if ( n.len() == 0 )
+        return false;
+    if ( n.len() > h.len() )
+        return false;
+
+    uint maxStart = h.len() - n.len();
+    for ( uint i = 0; i <= maxStart; i++ )
+    {
+        if ( h.substr( i, n.len() ) == n )
+            return true;
+    }
+    return false;
+}
