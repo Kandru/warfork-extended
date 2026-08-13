@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from .constants import ENGINE_HOOKS, HOOK_SIGS
 
+# Per-frame; we_debug prints here flood the console.
+_TICK_HOOKS = frozenset({"GT_ThinkRules"})
+
 
 def _dbg(name: str, enabled: bool) -> str:
-    if not enabled:
+    if not enabled or name in _TICK_HOOKS:
         return ""
     return (
         f'    if ( we_debug.integer == 1 )\n'

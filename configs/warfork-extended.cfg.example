@@ -4,7 +4,7 @@
 // Master switch (1 = enable framework hooks / features)
 set we_enabled "1"
 
-// Extra G_Print in wrappers (dev builds)
+// Extra G_Print on GT_* wrappers except GT_ThinkRules (dev builds)
 set we_debug "0"
 
 // Feature toggles
