@@ -8,7 +8,7 @@ alwaysApply: true
 - Custom GTs: separate repos → thin pk3 via `make custom CUSTOM_ROOT=… PK3=…` (needs WE pk3 on server VFS). Optional local overlay: `INCLUDE_CUSTOM=1` / `gamemodes/custom/` (gitignored).
 - Injector: `scripts/inject/` (+ thin `scripts/inject.py`). Default files get `we_` filename prefix (no stock pk3 collision); custom keeps original names. Renames engine `GT_*` → `GT_*__orig`; WE pk3 wrappers in `gen/wrappers.as`; custom thin pk3 uses `gen/wrappers_<stem>.as` (no `src/we` copy). New engine hook ⇒ update `ENGINE_HOOKS`/`HOOK_SIGS` in `scripts/inject/constants.py`.
 - Repo path contains `warfork-extended`; never test `"warfork-extended" in path.parts` — use `relative_to(progs/gametypes/warfork-extended)`.
-- Runtime data: `basewf/warfork-extended/*.txt` (`banlist.txt`, `users/<steamid>.txt`, `locks.txt`). Soft locks only on writes (`WE_WriteFileLocked`); reads never lock. Format `name=unix@ip:port`, 1s TTL.
+- Runtime data: `basewf/warfork-extended/*.txt` (`banlist.txt`, `report.txt`, `users/<steamid>.txt`, `locks.txt`). Soft locks only on writes (`WE_WriteFileLocked` / `WE_AppendFileLocked`); reads never lock. Format `name=unix@ip:port`, 1s TTL.
 - Cvars: `we_enabled`, `we_debug`, `we_feature_<name>` — example only in `configs/warfork-extended.cfg.example`; paste into `server.cfg` (no auto-write). `src/we/player/` is always on when `we_enabled` is 1 (no `we_feature_users`).
 - Features: register with `WE_Hooks_Add*` / `WE_Cmds_Add` (funcdef registries in `core/hook_types.as`). Cmds default prefix `we_`. Identity = steam_id. Custom GTs: `WE_GetPlayerData`/`WE_SetPlayerData` → keys forced to `cust_*` (see `development.md`).
 - Build: `make`/`make dev`/`make prod`/`make custom`. Version: `VERSION` → GH release workflow.

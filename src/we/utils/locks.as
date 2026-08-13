@@ -154,6 +154,18 @@ bool WE_WriteFileLocked( const String &in path, const String &in lockName, const
     return true;
 }
 
+// Append under soft lock (log-style files such as report.txt).
+bool WE_AppendFileLocked( const String &in path, const String &in lockName, const String &in content )
+{
+    if ( lockName.len() == 0 )
+        return false;
+    if ( !WE_TryLock( lockName ) )
+        return false;
+    G_AppendToFile( path, content );
+    WE_Unlock( lockName );
+    return true;
+}
+
 void WE_Locks_ReleaseAll()
 {
     uint nowSec = WE_UnixSeconds();

@@ -8,6 +8,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
+- Player reports (`we_report` / `report` → `report.txt`)
 - Custom awards (`award_*` counters, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
@@ -28,6 +29,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | `we_awards` | everyone | List your earned awards |
 | `we_awardGive <userid> <award_id>` | operator | Grant a catalog award |
 | `we_awardRemove <userid> <award_id>` | operator | Remove one count of a catalog award |
+| `we_report <userid> [reason]` | everyone | File a player report (`report` alias; writes `report.txt`) |
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
@@ -80,9 +82,12 @@ set we_feature_weapon "1"
 set we_feature_respawn "1"
 set we_feature_changeteam "1"
 set we_feature_awards "1"
+set we_feature_report "1"
 ```
 
 Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
+
+Player reports append to `basewf/warfork-extended/report.txt` (CSV: unix, reporter steam/name/clan, reported steam/name/clan, score/frags/deaths/suicides, reason). 60s cooldown per reporter.
 
 ## Extending (features)
 

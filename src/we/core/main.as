@@ -2,6 +2,8 @@ void WE_Init()
 {
     if ( !WE_FileExists( WE_BANLIST_PATH ) )
         WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", "" );
+    if ( !WE_FileExists( WE_REPORT_PATH ) )
+        WE_WriteFileLocked( WE_REPORT_PATH, "report", "" );
 
     WE_Locks_Register();
     WE_CoreCmds_Register();
@@ -12,6 +14,7 @@ void WE_Init()
     WE_ChangeTeam_Register();
     WE_Awards_Register();
     WE_Awards_RegisterCmds();
+    WE_Report_Register();
 }
 
 void WE_Init_After()

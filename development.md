@@ -191,11 +191,14 @@ For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (sa
 ```
 basewf/warfork-extended/
   banlist.txt
+  report.txt               # player reports (append-only CSV)
   awards.txt               # award catalog (load once per gametype init)
   locks.txt
   recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
   users/
     <steamid>.txt    # WE keys (incl. award_*) + cust_* keys
 ```
+
+`report.txt` lines are CSV: `unix, reporterSteam, reporterName, reporterClan, reportedSteam, reportedName, reportedClan, score, frags, deaths, suicides, reason`. Written via locked append (`we_report` / `report`).
 
 `recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown.

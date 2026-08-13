@@ -65,6 +65,15 @@ const String WE_MSG_AWARD_REMOVE_DONE = S_COLOR_GREEN + "Award removed.\n";
 const String WE_MSG_AWARD_REMOVE_NONE = S_COLOR_YELLOW + "Player does not have that award.\n";
 const String WE_MSG_AWARD_UNKNOWN = S_COLOR_RED + "Unknown award id.\n";
 
+const String WE_MSG_REPORT_DISABLED = S_COLOR_YELLOW + "Report feature disabled (we_feature_report 0).\n";
+const String WE_MSG_REPORT_USAGE = "usage: we_report <userid> [reason]\n";
+const String WE_MSG_REPORT_COOLDOWN = S_COLOR_YELLOW + "Please wait before filing another report.\n";
+const String WE_MSG_REPORT_FAILED = S_COLOR_RED + "Could not write report (try again).\n";
+const String WE_MSG_REPORT_FILED_PREFIX = S_COLOR_GREEN + "Report filed against ";
+const String WE_MSG_REPORT_FILED_SUFFIX = ".\n";
+const String WE_MSG_REPORT_REASON_PREFIX = "Reason: ";
+const String WE_MSG_REPORT_REVIEW = "An admin will review it.\n";
+
 const String WE_MSG_HELP =
     S_COLOR_CYAN + "warfork-extended commands:\n"
     + "  we_help\n"
@@ -79,7 +88,8 @@ const String WE_MSG_HELP =
     + "  we_changeteam <userid> <team>\n"
     + "  we_awards\n"
     + "  we_awardGive <userid> <award_id>\n"
-    + "  we_awardRemove <userid> <award_id>\n";
+    + "  we_awardRemove <userid> <award_id>\n"
+    + "  we_report <userid> [reason]\n";
 
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";
