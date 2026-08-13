@@ -42,6 +42,8 @@ def patch_gt_files(progs: Path, stub_includes: dict[str, str]) -> None:
         ]
         shared = [i for i in includes if i.lstrip("/").startswith("shared/")]
         rest = [i for i in includes if not i.lstrip("/").startswith("shared/")]
-        stub = stub_includes.get(gt_path.stem, "warfork-extended/gen/stubs_ffa.as")
+        stub = stub_includes.get(
+            gt_path.stem, "warfork-extended/gen/stubs_we_ffa.as"
+        )
         new_list = shared + [stub] + we_includes + rest + [wrapper]
         gt_path.write_text("\n".join(f"{inc};" for inc in new_list) + "\n", encoding="utf-8")

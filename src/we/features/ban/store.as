@@ -96,10 +96,7 @@ void WE_Ban_Reload()
 {
     WE_Ban_Clear();
     if ( !WE_FileExists( WE_BANLIST_PATH ) )
-    {
-        WE_WriteFile( WE_BANLIST_PATH, "" );
-        return;
-    }
+        return; // read-only path — file is created on write
 
     String data;
     if ( !WE_LoadFile( WE_BANLIST_PATH, data ) )
@@ -122,9 +119,6 @@ void WE_Ban_Reload()
 
 void WE_Ban_Write()
 {
-    if ( !WE_TryLock( "banlist" ) )
-        return;
-
     String content = "";
     for ( int i = 0; i < weBanCount; i++ )
     {
@@ -139,8 +133,7 @@ void WE_Ban_Write()
                  + ", " + weBanReason[i]
                  + "\n";
     }
-    WE_WriteFile( WE_BANLIST_PATH, content );
-    WE_Unlock( "banlist" );
+    WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", content );
 }
 
 bool WE_Ban_IsSteamBanned( const String &in steamid )

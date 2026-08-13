@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 from .constants import SKIP_NAMES
+from .prefix import prefix_default_sources, rewrite_gt_includes_prefer_we
 
 INCLUDE_RE = re.compile(r"^\s*([^;]+?)\s*;\s*$")
 
@@ -25,7 +26,7 @@ def copy_tree(src: Path, dst: Path) -> None:
 
 
 def merge_sources(root: Path, out: Path) -> Path:
-    """Copy default then overlay custom into out/progs."""
+    """Copy default, we_-prefix those files, then overlay custom (unprefixed)."""
     progs = out / "progs"
     if out.exists():
         shutil.rmtree(out)
@@ -36,7 +37,12 @@ def merge_sources(root: Path, out: Path) -> Path:
         raise SystemExit(f"missing {default_progs}")
 
     copy_tree(default_progs, progs)
+    path_map = prefix_default_sources(progs)
+    print(f"[inject] prefixed {len(path_map)} default files with we_")
+
     copy_tree(root / "gamemodes" / "custom" / "progs", progs)
+    # Custom .gt may still reference stock paths (shared/, generic/, …)
+    rewrite_gt_includes_prefer_we(progs)
     return progs
 
 

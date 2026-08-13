@@ -22,14 +22,11 @@ void WE_UserSet( const String &in steamid, const String &in key, const String &i
     String path = WE_UserPath( steamid );
     if ( path.len() == 0 )
         return;
-    if ( !WE_TryLock( "user_" + steamid ) )
-        return;
 
     String data;
-    WE_LoadFile( path, data );
+    WE_LoadFile( path, data ); // read unlocked
     data = WE_KvSet( data, key, WE_SanitizeField( value ) );
-    WE_WriteFile( path, data );
-    WE_Unlock( "user_" + steamid );
+    WE_WriteFileLocked( path, "user_" + steamid, data );
 }
 
 void WE_UserTouchConnected( Client @client )
@@ -44,18 +41,13 @@ void WE_UserTouchConnected( Client @client )
         return;
 
     String path = WE_UserPath( steamid );
-    if ( !WE_TryLock( "user_" + steamid ) )
-        return;
-
     String data;
-    WE_LoadFile( path, data );
+    WE_LoadFile( path, data ); // read unlocked
 
     String snapshot;
     WE_SnapshotUserInfo( client, snapshot );
     data = WE_KvMergeBlob( data, snapshot );
-
     data = WE_KvSet( data, "last_connected", WE_HumanTimeNow() );
     data = WE_KvSet( data, "last_connected_unix", WE_UnixTimestamp() );
-    WE_WriteFile( path, data );
-    WE_Unlock( "user_" + steamid );
+    WE_WriteFileLocked( path, "user_" + steamid, data );
 }

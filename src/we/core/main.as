@@ -1,13 +1,9 @@
 void WE_Init()
 {
-    if ( !WE_FileExists( WE_ROOT + "users/.keep.txt" ) )
-        WE_WriteFile( WE_ROOT + "users/.keep.txt", "" );
-    if ( !WE_FileExists( WE_LOCKS + ".keep.txt" ) )
-        WE_WriteFile( WE_LOCKS + ".keep.txt", "" );
     if ( !WE_FileExists( WE_BANLIST_PATH ) )
-        WE_WriteFile( WE_BANLIST_PATH, "" );
+        WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", "" );
 
-    // Features attach via funcdef registries (no hard-coded calls in dispatch).
+    WE_Locks_Register();
     WE_CoreCmds_Register();
     WE_Users_Register();
     WE_Ban_Register();

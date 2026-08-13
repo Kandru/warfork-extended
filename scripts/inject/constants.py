@@ -57,6 +57,7 @@ WE_MODULES = (
     "utils/time.as",
     "utils/string.as",
     "utils/files.as",
+    "utils/locks.as",
     "utils/kv.as",
     "utils/perms.as",
     "utils/menu.as",

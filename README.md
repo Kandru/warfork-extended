@@ -1,6 +1,6 @@
 # warfork-extended
 
-Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 that overrides `progs/gametypes/*` when placed in `basewf`.
+Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths).
 
 ## What it does
 
@@ -38,6 +38,7 @@ make dev      # debug inject + copy pk3 into WARFORK_BASEWF
 ```
 
 Drop the pk3 into your server `basewf` folder (remove older `gt_warfork_extended_*.pk3` first if not using `make dev`).
+Custom gametypes under `gamemodes/custom/` keep their original filenames (they are not in the stock game).
 
 ## Server config
 
