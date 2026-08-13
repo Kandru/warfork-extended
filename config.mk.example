@@ -1,0 +1,4 @@
+# Copy to config.mk and adjust.
+# make dev copies gt_warfork_extended_*.pk3 into this folder.
+
+WARFORK_BASEWF=/path/to/warfork/basewf

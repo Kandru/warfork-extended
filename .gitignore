@@ -1,0 +1,17 @@
+# Local build / operator config
+config.mk
+dist/
+idea/
+*.pk3
+scripts/__pycache__/
+scripts/inject/__pycache__/
+
+# Custom gametypes (not uploaded)
+gamemodes/custom/
+
+# Editor / OS
+.DS_Store
+*~
+*.swp
+.idea/
+.vscode/

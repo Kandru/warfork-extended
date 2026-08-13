@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: ver
+        run: echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Collect commits since last release
+        id: notes
+        run: |
+          set -euo pipefail
+          VER="${{ steps.ver.outputs.version }}"
+          PREV="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          {
+            echo "## warfork-extended v${VER}"
+            echo
+            echo "### Commits since ${PREV:-beginning}"
+            echo
+            if [ -n "${PREV}" ]; then
+              git log "${PREV}..HEAD" --pretty=format:'- %s (%h)' --no-merges
+            else
+              git log HEAD --pretty=format:'- %s (%h)' --no-merges
+            fi
+            echo
+          } > RELEASE_BODY.md
+          cat RELEASE_BODY.md
+
+      - name: Install zip
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Build prod pk3
+        run: make prod
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VER="${{ steps.ver.outputs.version }}"
+          PK3="dist/prod/gt_warfork_extended_${VER}.pk3"
+          test -f "$PK3"
+          gh release create "v${VER}" "$PK3" \
+            --target "${{ github.sha }}" \
+            --title "v${VER}" \
+            --notes-file RELEASE_BODY.md

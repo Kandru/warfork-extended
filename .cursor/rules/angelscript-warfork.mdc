@@ -1,0 +1,16 @@
+---
+description: Warfork AngelScript reserved words / pitfalls
+globs: "**/*.as"
+alwaysApply: false
+---
+# AS (Warfork)
+
+- `out` reserved. NEVER local/var name `out`. Use `result`/`content`. Param dir `Type &out x` OK.
+- Prefer `const String &in`; handles `@`; null via `@x == null`.
+- No `findFirst` assumed; scan w/ `substr`. `getToken` = whitespace (space/tab); CSV/TSV w/ spaces → manual split, not `getToken`.
+- Engine hooks = `GT_*` by name; keep empty stubs if present. Helpers like `GT_updateScore` are NOT engine hooks.
+- Persist txt: self-heal corrupt/empty (rewrite defaults). Ban by steam_id file, not IP/`addip`.
+- `localTime` = wall clock ms (uint64); `levelTime` = match time. Unix ≈ `localTime/1000`.
+- Userinfo: `client.getUserInfoKey("steam_id")`; identity = steam_id only (ignore empty/bots).
+- Files: `G_LoadFile` / `G_WriteFile` / `G_AppendToFile` / `G_FileLength`. Colors: `removeColorTokens()`.
+- Ops: `client.isOperator`; kick via `G_CmdExecute("kick N\n")` or `dropClient`.

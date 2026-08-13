@@ -1,0 +1,15 @@
+---
+description: warfork-extended framework map for AI
+alwaysApply: true
+---
+# WE framework
+
+- NEVER edit `gamemodes/default/**` for features. Add AS under `src/we/` (`core/`, `utils/`, `player/`, `features/`); build injects.
+- Custom GTs: `gamemodes/custom/progs/gametypes/` (gitignored). Overlay wins on build.
+- Injector: `scripts/inject/` (+ thin `scripts/inject.py`). Renames engine `GT_*` → `GT_*__orig`; wrappers in `gen/wrappers.as`. New engine hook ⇒ update `ENGINE_HOOKS`/`HOOK_SIGS` in `scripts/inject/constants.py`.
+- Repo path contains `warfork-extended`; never test `"warfork-extended" in path.parts` — use `relative_to(progs/gametypes/warfork-extended)`.
+- Runtime data: `basewf/warfork-extended/*.txt` (`banlist.txt`, `users/<steamid>.txt`, `locks/`). Multi-server: reload often + soft locks.
+- Cvars: `we_enabled`, `we_debug`, `we_feature_<name>` — example only in `configs/warfork-extended.cfg.example`; paste into `server.cfg` (no auto-write).
+- Features: register with `WE_Hooks_Add*` / `WE_Cmds_Add` (funcdef registries in `core/hook_types.as`). Cmds default prefix `we_`. Identity = steam_id.
+- Build: `make`/`make dev`/`make prod`. Version: `VERSION` → GH release workflow.
+- Ref quarry (not shipped): `idea/progs/gametypes/agungame/`.

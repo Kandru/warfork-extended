@@ -1,0 +1,12 @@
+// warfork-extended — paste relevant lines into your server.cfg
+// Do NOT exec this file from the gametype; admins own server.cfg.
+
+// Master switch (1 = enable framework hooks / features)
+set we_enabled "1"
+
+// Extra G_Print in wrappers (dev builds)
+set we_debug "0"
+
+// Feature toggles
+set we_feature_users "1"
+set we_feature_ban "1"
