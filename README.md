@@ -75,6 +75,7 @@ make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
 Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild.
 
 Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
+
 ## Server config
 
 Paste cvars into your `server.cfg` (see [`configs/warfork-extended.cfg.example`](configs/warfork-extended.cfg.example)). Warfork-Extended does not create a configuration file on its own:
@@ -92,27 +93,6 @@ set we_awards_chat_message "1"
 set we_feature_report "1"
 set we_feature_welcome "1"
 ```
-
-On join (`enterGame`), players with a steam_id get a private themed chat tip: `[WE] Hey <name>, type we_help into the console` (`we_feature_welcome`, default `1`).
-
-Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
-
-`we_awards_center_message` (default `1`) shows the grant on the HUD award position (`addAward`). `we_awards_chat_message` (default `1`) announces in chat: the recipient sees the same award text prefixed with `[WE]`; everyone else sees `[WE] <name> got the award: <title>`.
-
-Full kind / filter / limitation reference: [`awards.md`](awards.md).
-
-Line format: `id|enabled|kind|freq|p1|p2|title|description`
-
-| `freq` | Meaning |
-|--------|---------|
-| `every` | Grant whenever the trigger fires (after the kind’s own re-arm) |
-| `map` | At most once per gametype init / map |
-| `round` | At most once per **match playtime** (reset when playtime starts). CA/bomb intra-match rounds share one playtime, so this is once per match there |
-| `once` | Lifetime — skip if `award_<id>` is already &gt; 0 |
-
-`we_awardGive` ignores frequency. All duration parameters are **seconds** (including `fast_death` / `kill_then_die`). If you still have an older seeded `awards.txt`, add the `freq` column and convert former millisecond values (`5000` → `5`, `3000` → `3`).
-
-Player reports append to `basewf/warfork-extended/report.txt` (CSV: unix, reporter steam/name/clan, reported steam/name/clan, score/frags/deaths/suicides, reason). 60s cooldown per reporter.
 
 ## Report webhooks
 
@@ -182,19 +162,31 @@ Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerD
 - Bump [`VERSION`](VERSION) (semver).
 - Pushing a change to `VERSION` on `main` runs GitHub Actions: build prod pk3 + Linux `we-report-notify` binary, then a GitHub Release with both assets and commits since the previous tag.
 
-## Layout
+## Screenshots
 
-```
-gamemodes/default/     # upstream scripts (never edit for WE)
-gamemodes/custom/      # optional local overlay (INCLUDE_CUSTOM=1 only)
-src/we/                # framework AngelScript (core/, utils/, player/, features/)
-scripts/inject/        # Python inject package
-scripts/inject.py      # thin CLI entry
-tools/report-notify/   # Discord webhook sidecar for report.txt
-dist/debug|prod/       # WE pk3 output
-dist/go/               # we-report-notify binaries
-dist/custom/           # scratch for make custom
-```
+### Command we_awards
+
+![we_awards](images/command_we_awards.png)
+
+### Command we_ban
+
+![we_ban](images/command_we_ban.png)
+
+### Command we_help
+
+![we_help](images/command_we_help.png)
+
+### Command we_users
+
+![we_users](images/command_we_users.png)
+
+### Command we_weapon*
+
+![we_weapon](images/command_we_weapon.png)
+
+### Command report
+
+![report](images/command_report.png)
 
 ## License
 
