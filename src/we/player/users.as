@@ -106,6 +106,7 @@ void WE_UserStamp( Client @client, bool connected )
     String snapshot;
     WE_SnapshotUserInfo( client, snapshot );
     data = WE_KvMergeBlob( data, snapshot );
+    data = WE_KvDelete( data, "password" );
     if ( connected )
     {
         data = WE_KvSet( data, "last_connected", WE_HumanTimeNow() );

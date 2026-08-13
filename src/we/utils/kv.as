@@ -66,6 +66,26 @@ String WE_KvSet( const String &in data, const String &in key, const String &in v
     return result;
 }
 
+String WE_KvDelete( const String &in data, const String &in key )
+{
+    String result = "";
+    String line;
+    uint pos = 0;
+
+    while ( WE_NextLine( data, pos, line, pos ) )
+    {
+        if ( line.len() == 0 )
+            continue;
+
+        String k;
+        String v;
+        if ( WE_SplitKeyValue( line, k, v ) && k == key )
+            continue;
+        result += line + "\n";
+    }
+    return result;
+}
+
 // Keep data lines whose keys are not in blob; append all blob pairs.
 String WE_KvMergeBlob( const String &in data, const String &in blob )
 {
