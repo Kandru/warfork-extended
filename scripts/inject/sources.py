@@ -29,10 +29,15 @@ def copy_we_sources(root: Path, progs: Path, version: str) -> None:
     )
 
 
-def patch_gt_files(progs: Path, stub_includes: dict[str, str]) -> None:
+def patch_gt_files(
+    progs: Path,
+    stub_includes: dict[str, str],
+    *,
+    wrapper_includes: dict[str, str] | None = None,
+    default_wrapper: str = "warfork-extended/gen/wrappers.as",
+) -> None:
     gametypes = progs / "gametypes"
     we_includes = [f"warfork-extended/{m}" for m in WE_MODULES]
-    wrapper = "warfork-extended/gen/wrappers.as"
 
     for gt_path in sorted(gametypes.glob("*.gt")):
         includes = [
@@ -45,5 +50,9 @@ def patch_gt_files(progs: Path, stub_includes: dict[str, str]) -> None:
         stub = stub_includes.get(
             gt_path.stem, "warfork-extended/gen/stubs_we_ffa.as"
         )
+        if wrapper_includes is not None:
+            wrapper = wrapper_includes.get(gt_path.stem, default_wrapper)
+        else:
+            wrapper = default_wrapper
         new_list = shared + [stub] + we_includes + rest + [wrapper]
         gt_path.write_text("\n".join(f"{inc};" for inc in new_list) + "\n", encoding="utf-8")

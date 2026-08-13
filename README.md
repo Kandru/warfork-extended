@@ -44,13 +44,26 @@ cp config.mk.example config.mk
 # edit WARFORK_BASEWF=/path/to/basewf
 
 make          # help
-make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3
+make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3 (stock GTs + WE only)
 make dev      # debug inject + copy pk3 into WARFORK_BASEWF
 ```
 
 Drop the pk3 into your server `basewf` folder (remove older `gt_warfork_extended_*.pk3` first if not using `make dev`).
-Custom gametypes under `gamemodes/custom/` keep their original filenames (they are not in the stock game).
 
+### Custom gametypes (separate pk3)
+
+Custom GTs live in **their own repos** and ship as a **thin pk3** that still needs this WE pk3 on the server (AngelScript includes resolve via the VFS). Build from this repo:
+
+```bash
+make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
+# optional: MODE=debug
+```
+
+`CUSTOM_ROOT` must contain `progs/gametypes/<name>.gt` (+ `.as` extras). Filenames stay unprefixed. Put both pk3s in `basewf`.
+
+Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild.
+
+Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
 ## Server config
 
 Paste cvars into your `server.cfg` (see [`configs/warfork-extended.cfg.example`](configs/warfork-extended.cfg.example)). Warfork-Extended does not create a configuration file on its own:
@@ -77,11 +90,10 @@ Call your `*_Register()` from `WE_Init()` in `src/we/core/main.as`. Hook API use
 
 Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerData` (keys stored as `cust_*`) — see [development.md](development.md).
 
-1. Create the same layout as stock:
-   `gamemodes/custom/progs/gametypes/<name>.gt`  
-   `gamemodes/custom/progs/gametypes/<name>.as` (and extras)
-2. Run `make prod` or `make dev`. The injector renames engine `GT_*` entry points to `GT_*__orig` and wraps them
-3. Upload to your Warfork server and restart
+1. In a **separate** repo, use the stock layout: `progs/gametypes/<name>.gt` + `.as` extras
+2. Add this repo as a submodule (or CI checkout), then:
+   `make -C path/to/warfork-extended custom CUSTOM_ROOT=$PWD PK3=$PWD/dist/gt_<name>.pk3`
+3. Install **both** `gt_warfork_extended_*.pk3` and your custom pk3 into `basewf`, then restart
 
 ## Version / releases
 
@@ -92,11 +104,12 @@ Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerD
 
 ```
 gamemodes/default/     # upstream scripts (never edit for WE)
-gamemodes/custom/      # your gametypes (local)
+gamemodes/custom/      # optional local overlay (INCLUDE_CUSTOM=1 only)
 src/we/                # framework AngelScript (core/, utils/, player/, features/)
 scripts/inject/        # Python inject package
 scripts/inject.py      # thin CLI entry
-dist/debug|prod/       # build output + pk3
+dist/debug|prod/       # WE pk3 output
+dist/custom/           # scratch for make custom
 ```
 
 ## License

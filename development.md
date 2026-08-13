@@ -4,10 +4,59 @@ This document is for authors of **custom gamemodes** (and WE features) that need
 
 ## Build & layout reminder
 
-- Put custom gametypes in `gamemodes/custom/progs/gametypes/` (same layout as stock).
-- Run `make prod` or `make dev`. Custom files keep their original names.
-- WE AngelScript is injected **before** your gametype scripts in the `.gt` include list, so you can call WE APIs from your `.as` files directly.
-- Identity is always **SteamID**. Clients without `steam_id` (e.g. bots) are ignored by user APIs.
+Custom gametypes ship as a **separate thin pk3**. They must be inject-built so their `.gt` include list pulls in WE + wrappers; Warfork compiles one AngelScript module per `.gt` (no cross-pk3 function calls).
+
+### Layout (your GT repo)
+
+```
+progs/gametypes/<name>.gt
+progs/gametypes/<name>.as
+progs/gametypes/…          # extras
+```
+
+Filenames stay unprefixed (they are not in the stock game).
+
+### Build (from warfork-extended)
+
+```bash
+make custom CUSTOM_ROOT=/path/to/your-gt-repo PK3=/path/to/gt_mygt.pk3
+# optional: MODE=debug
+```
+
+From a submodule checkout:
+
+```bash
+make -C vendor/warfork-extended custom \
+  CUSTOM_ROOT=$(PWD) \
+  PK3=$(PWD)/dist/gt_mygt.pk3
+```
+
+What the injector does:
+
+- Copies only your `progs/` (does **not** embed `src/we/`)
+- Rewrites stock includes (`shared/`, `generic/`, …) to `we_*` names expected from the WE pk3
+- Renames engine `GT_*` → `GT_*__orig`, writes per-GT stubs + `wrappers_<stem>.as`
+- Patches the `.gt` list: shared → stubs → WE modules → your scripts → wrappers
+
+### Server
+
+Install **both** pk3s in `basewf`:
+
+1. `gt_warfork_extended_<VERSION>.pk3` (stock wrapped GTs + WE sources)
+2. Your thin custom pk3
+
+Rebuild the custom pk3 when you bump WE if inject hooks (`ENGINE_HOOKS`) or include order change. Feature-only WE updates that keep the same paths usually work without a custom rebuild.
+
+### Local debug (optional one-pk3 overlay)
+
+```bash
+# inside warfork-extended, with sources under gamemodes/custom/
+make prod INCLUDE_CUSTOM=1
+# or: make prod INCLUDE_CUSTOM=1 CUSTOM_ROOT=/path/to/my-gt-repo
+```
+
+WE AngelScript is listed **before** your gametype scripts in the `.gt` include list, so you can call WE APIs from your `.as` files directly.
+Identity is always **SteamID**. Clients without `steam_id` (e.g. bots) are ignored by user APIs.
 
 ## Per-player key/value storage
 

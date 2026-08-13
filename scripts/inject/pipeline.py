@@ -3,14 +3,29 @@ from __future__ import annotations
 from pathlib import Path
 
 from .constants import ENGINE_HOOKS
-from .merge import merge_sources, read_version
+from .merge import merge_custom_only, merge_sources, read_version
 from .rename import inject_as_files
 from .sources import copy_we_sources, patch_gt_files
 from .stubs import write_stubs
 from .wrappers import generate_wrappers
 
 
-def run(*, mode: str, root: Path, out: Path) -> int:
+def _print_stub_summary(per_gt: dict[str, set[str]]) -> None:
+    for stem, found in sorted(per_gt.items()):
+        missing = [n for n in ENGINE_HOOKS if n not in found]
+        if missing:
+            print(f"[inject] {stem}: stubs for {', '.join(missing)}")
+
+
+def run(
+    *,
+    mode: str,
+    root: Path,
+    out: Path,
+    include_custom: bool = False,
+    custom_root: Path | None = None,
+) -> int:
+    """Inject WE into default (and optionally overlaid custom) gametypes."""
     root = root.resolve()
     out = out.resolve()
     version = read_version(root)
@@ -19,7 +34,12 @@ def run(*, mode: str, root: Path, out: Path) -> int:
     print(f"[inject] mode={mode} version={version}")
     print(f"[inject] out={out}")
 
-    progs = merge_sources(root, out)
+    progs = merge_sources(
+        root,
+        out,
+        include_custom=include_custom,
+        custom_root=custom_root if include_custom else None,
+    )
     per_gt = inject_as_files(progs)
     copy_we_sources(root, progs, version)
     stub_includes = write_stubs(progs, per_gt)
@@ -30,11 +50,52 @@ def run(*, mode: str, root: Path, out: Path) -> int:
     (gen / "wrappers.as").write_text(wrappers, encoding="utf-8")
     patch_gt_files(progs, stub_includes)
 
-    for stem, found in sorted(per_gt.items()):
-        missing = [n for n in ENGINE_HOOKS if n not in found]
-        if missing:
-            print(f"[inject] {stem}: stubs for {', '.join(missing)}")
+    _print_stub_summary(per_gt)
+    print(f"[inject] gametypes: {len(per_gt)}")
+    print("[inject] done")
+    return 0
 
+
+def run_custom(
+    *,
+    mode: str,
+    root: Path,
+    custom_root: Path,
+    out: Path,
+) -> int:
+    """Thin custom-GT inject: no WE AS copy; stubs/wrappers unique per GT stem.
+
+    The custom .gt lists warfork-extended/* and we_* shared/generic paths that
+    resolve from the WE pk3 on the server VFS at load time.
+    """
+    root = root.resolve()
+    custom_root = custom_root.resolve()
+    out = out.resolve()
+    version = read_version(root)
+    debug = mode == "debug"
+
+    print(f"[inject] mode={mode} version={version} (custom-only)")
+    print(f"[inject] custom_root={custom_root}")
+    print(f"[inject] out={out}")
+
+    progs = merge_custom_only(custom_root, out)
+    per_gt = inject_as_files(progs)
+    # Do not copy src/we — WE modules come from the WE pk3 via VFS.
+    stub_includes = write_stubs(progs, per_gt)
+
+    wrappers = generate_wrappers(mode, debug=debug)
+    gen = progs / "gametypes" / "warfork-extended" / "gen"
+    gen.mkdir(parents=True, exist_ok=True)
+
+    wrapper_includes: dict[str, str] = {}
+    for stem in per_gt:
+        name = f"wrappers_{stem}.as"
+        (gen / name).write_text(wrappers, encoding="utf-8")
+        wrapper_includes[stem] = f"warfork-extended/gen/{name}"
+
+    patch_gt_files(progs, stub_includes, wrapper_includes=wrapper_includes)
+
+    _print_stub_summary(per_gt)
     print(f"[inject] gametypes: {len(per_gt)}")
     print("[inject] done")
     return 0

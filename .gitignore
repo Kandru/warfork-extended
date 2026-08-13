@@ -6,7 +6,7 @@ idea/
 scripts/__pycache__/
 scripts/inject/__pycache__/
 
-# Custom gametypes (not uploaded)
+# Custom gametypes (optional local overlay for INCLUDE_CUSTOM=1; not in releases)
 gamemodes/custom/
 
 # Editor / OS

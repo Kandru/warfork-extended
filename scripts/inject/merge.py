@@ -25,8 +25,18 @@ def copy_tree(src: Path, dst: Path) -> None:
         shutil.copy2(path, target)
 
 
-def merge_sources(root: Path, out: Path) -> Path:
-    """Copy default, we_-prefix those files, then overlay custom (unprefixed)."""
+def merge_sources(
+    root: Path,
+    out: Path,
+    *,
+    include_custom: bool = False,
+    custom_root: Path | None = None,
+) -> Path:
+    """Copy default, we_-prefix those files; optionally overlay custom (unprefixed).
+
+    Custom overlay is off by default so the WE pk3 stays stock-only. Pass
+    include_custom=True (local debug) or a custom_root to merge custom GTs.
+    """
     progs = out / "progs"
     if out.exists():
         shutil.rmtree(out)
@@ -40,9 +50,41 @@ def merge_sources(root: Path, out: Path) -> Path:
     path_map = prefix_default_sources(progs)
     print(f"[inject] prefixed {len(path_map)} default files with we_")
 
-    copy_tree(root / "gamemodes" / "custom" / "progs", progs)
-    # Custom .gt may still reference stock paths (shared/, generic/, …)
-    rewrite_gt_includes_prefer_we(progs)
+    if include_custom or custom_root is not None:
+        overlay = (custom_root or (root / "gamemodes" / "custom")).resolve()
+        custom_progs = overlay / "progs"
+        if not custom_progs.is_dir():
+            raise SystemExit(f"missing custom progs: {custom_progs}")
+        copy_tree(custom_progs, progs)
+        # Custom .gt may still reference stock paths (shared/, generic/, …)
+        rewrite_gt_includes_prefer_we(progs)
+        print(f"[inject] overlaid custom from {overlay}")
+
+    return progs
+
+
+def merge_custom_only(custom_root: Path, out: Path) -> Path:
+    """Copy only a custom GT tree into out/progs (no default, no WE sources)."""
+    overlay = custom_root.resolve()
+    custom_progs = overlay / "progs"
+    if not custom_progs.is_dir():
+        raise SystemExit(
+            f"CUSTOM_ROOT must contain progs/gametypes/: missing {custom_progs}"
+        )
+
+    progs = out / "progs"
+    if out.exists():
+        shutil.rmtree(out)
+    progs.mkdir(parents=True)
+
+    copy_tree(custom_progs, progs)
+    gt_dir = progs / "gametypes"
+    if not gt_dir.is_dir() or not any(gt_dir.glob("*.gt")):
+        raise SystemExit(f"no .gt files under {gt_dir}")
+
+    # Retarget shared/generic includes to we_* names expected from the WE pk3 VFS.
+    rewrite_gt_includes_prefer_we(progs, assume_we=True)
+    print(f"[inject] custom-only from {overlay}")
     return progs
 
 

@@ -84,26 +84,41 @@ def rewrite_gt_includes_with_map(progs: Path, path_map: dict[str, str]) -> None:
         gt_path.write_text("\n".join(lines_out) + "\n", encoding="utf-8")
 
 
-def prefer_existing_we_include(progs: Path, include: str) -> str:
-    """If a we_-prefixed sibling file exists, point the include at it."""
+def prefer_existing_we_include(
+    progs: Path, include: str, *, assume_we: bool = False
+) -> str:
+    """Prefer a we_-prefixed sibling; optionally assume WE pk3 provides it.
+
+    When assume_we is True (thin custom pk3), files not present in this tree
+    are rewritten to we_* names so the server VFS resolves them from the WE pk3.
+    Files that exist locally (custom GT sources) keep their names.
+    """
     body = include.lstrip("/")
     if body.startswith("shared/"):
         parent, name = body.rsplit("/", 1)
         we = _we_name(name)
         if (progs / parent / we).is_file():
             return f"/{parent}/{we}"
+        if (progs / parent / name).is_file():
+            return include
+        if assume_we:
+            return f"/{parent}/{we}"
         return include
 
     parts = body.split("/")
-    parts[-1] = _we_name(parts[-1])
-    cand = "/".join(parts)
+    we_parts = parts[:-1] + [_we_name(parts[-1])]
+    cand = "/".join(we_parts)
     if (progs / "gametypes" / cand).is_file():
+        return cand
+    if (progs / "gametypes" / body).is_file():
+        return include
+    if assume_we:
         return cand
     return include
 
 
-def rewrite_gt_includes_prefer_we(progs: Path) -> None:
-    """After custom overlay: retarget includes to we_ files when those exist.
+def rewrite_gt_includes_prefer_we(progs: Path, *, assume_we: bool = False) -> None:
+    """Retarget includes to we_ files when those exist (or assume_we for VFS).
 
     Custom gametype files keep their own names; only references into renamed
     default assets (shared/, generic/, …) are updated.
@@ -121,7 +136,9 @@ def rewrite_gt_includes_prefer_we(progs: Path) -> None:
             if inc.replace("\\", "/").startswith("warfork-extended/"):
                 lines_out.append(f"{inc};")
                 continue
-            lines_out.append(f"{prefer_existing_we_include(progs, inc)};")
+            lines_out.append(
+                f"{prefer_existing_we_include(progs, inc, assume_we=assume_we)};"
+            )
         gt_path.write_text("\n".join(lines_out) + "\n", encoding="utf-8")
 
 
