@@ -1,20 +1,23 @@
+bool WE_ChangeTeam_IsJoinable( int teamId )
+{
+    if ( teamId == TEAM_SPECTATOR )
+        return true;
+    if ( gametype.isTeamBased )
+        return teamId == TEAM_ALPHA || teamId == TEAM_BETA;
+    return teamId == TEAM_PLAYERS;
+}
+
 void WE_ChangeTeam_PrintTeams( Client @client )
 {
     client.printMessage( WE_MSG_TEAMS_HEADER );
     for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
     {
+        if ( !WE_ChangeTeam_IsJoinable( t ) )
+            continue;
         Team @team = @G_GetTeam( t );
         if ( @team == null )
             continue;
-
-        String line = t + ": ";
-        if ( @team.name != null && team.name.len() > 0 )
-            line += team.name;
-        else
-            line += "?";
-        if ( @team.defaultName != null && team.defaultName.len() > 0 )
-            line += " (" + team.defaultName + ")";
-        client.printMessage( line + "\n" );
+        WE_ChangeTeam_PrintTeamLine( client, t, team );
     }
 }
 
@@ -29,9 +32,9 @@ bool WE_ChangeTeam_TextMatches( Team @team, const String &in query )
 {
     if ( @team == null )
         return false;
-    if ( @team.name != null && WE_ContainsIgnoreCase( WE_StripColors( team.name ), query ) )
+    if ( WE_ContainsIgnoreCase( WE_StripColors( team.name ), query ) )
         return true;
-    if ( @team.defaultName != null && WE_ContainsIgnoreCase( team.defaultName, query ) )
+    if ( WE_ContainsIgnoreCase( team.defaultName, query ) )
         return true;
     return false;
 }
@@ -40,9 +43,9 @@ bool WE_ChangeTeam_TextEquals( Team @team, const String &in query )
 {
     if ( @team == null )
         return false;
-    if ( @team.name != null && WE_EqualsIgnoreCase( WE_StripColors( team.name ), query ) )
+    if ( WE_EqualsIgnoreCase( WE_StripColors( team.name ), query ) )
         return true;
-    if ( @team.defaultName != null && WE_EqualsIgnoreCase( team.defaultName, query ) )
+    if ( WE_EqualsIgnoreCase( team.defaultName, query ) )
         return true;
     return false;
 }
@@ -52,11 +55,11 @@ void WE_ChangeTeam_PrintTeamLine( Client @to, int teamId, Team @team )
     if ( @to == null || @team == null )
         return;
     String line = teamId + ": ";
-    if ( @team.name != null && team.name.len() > 0 )
+    if ( team.name.len() > 0 )
         line += team.name;
     else
         line += "?";
-    if ( @team.defaultName != null && team.defaultName.len() > 0 )
+    if ( team.defaultName.len() > 0 )
         line += " (" + team.defaultName + ")";
     to.printMessage( line + "\n" );
 }
@@ -71,8 +74,11 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
     if ( query.isNumerical() )
     {
         int id = query.toInt();
-        if ( id >= TEAM_SPECTATOR && id < GS_MAX_TEAMS && @G_GetTeam( id ) != null )
+        if ( WE_ChangeTeam_IsJoinable( id ) && @G_GetTeam( id ) != null )
             return id;
+        client.printMessage( WE_MSG_CHANGETEAM_INVALID );
+        WE_ChangeTeam_PrintTeams( client );
+        return -1;
     }
 
     int matchCount = 0;
@@ -82,6 +88,8 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
 
     for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
     {
+        if ( !WE_ChangeTeam_IsJoinable( t ) )
+            continue;
         Team @team = @G_GetTeam( t );
         if ( @team == null )
             continue;
@@ -107,6 +115,8 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
         client.printMessage( WE_MSG_TEAM_AMBIGUOUS );
         for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
         {
+            if ( !WE_ChangeTeam_IsJoinable( t ) )
+                continue;
             Team @team = @G_GetTeam( t );
             if ( @team == null )
                 continue;
@@ -146,18 +156,33 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
         WE_ChangeTeam_PrintTeams( client );
         return true;
     }
+    if ( !WE_ClientListed( target, true ) )
+    {
+        WE_ChangeTeam_PrintUsage( client );
+        return true;
+    }
 
     int teamId = WE_ChangeTeam_TeamFromQuery( client, teamTok );
     if ( teamId < 0 )
         return true;
 
-    if ( target.team == teamId )
+    Entity @ent = @target.getEnt();
+    if ( @ent == null )
+        return true;
+
+    if ( target.team == teamId && ent.team == teamId )
     {
         client.printMessage( WE_MSG_CHANGETEAM_SAME );
         return true;
     }
 
+    // Client.team is a raw field write; G_Teams_SetTeam ghosts then queues spawn.
     target.team = teamId;
+    target.respawn( true );
+    @ent = @target.getEnt();
+    if ( @ent != null )
+        ent.spawnqueueAdd();
+
     target.printMessage( WE_MSG_CHANGETEAM_NOTIFY );
     client.printMessage( WE_MSG_CHANGETEAM_DONE );
     return true;

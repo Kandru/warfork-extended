@@ -256,6 +256,29 @@ bool WE_RecentDisconnects_IsKnown( const String &in steamid )
     return WE_RecentDisconnects_WorkContains( steamid );
 }
 
+bool WE_RecentDisconnects_NameMatches( const String &in steamid, const String &in query )
+{
+    String name = WE_UserGet( steamid, "name" );
+    if ( name.len() == 0 )
+        return false;
+    return WE_ContainsIgnoreCase( WE_StripColors( name ), query );
+}
+
+bool WE_RecentDisconnects_NameEquals( const String &in steamid, const String &in query )
+{
+    String name = WE_UserGet( steamid, "name" );
+    if ( name.len() == 0 )
+        return false;
+    return WE_EqualsIgnoreCase( WE_StripColors( name ), query );
+}
+
+bool WE_RecentDisconnects_SteamMatches( const String &in steamid, const String &in query )
+{
+    if ( steamid.len() == 0 || query.len() == 0 )
+        return false;
+    return WE_ContainsIgnoreCase( steamid, query );
+}
+
 bool WE_ClientIsOnlineBySteamId( const String &in steamid )
 {
     if ( steamid.len() == 0 )
@@ -290,18 +313,14 @@ Client @WE_FindClientBySteamId( const String &in steamid )
     return null;
 }
 
-void WE_RecentDisconnects_Print( Client @client )
+// Listed recents: newest first, skip empty / currently online, cap at WE_MAX_RECENT_DISCONNECTS.
+int WE_RecentDisconnects_LoadListed()
 {
-    if ( @client == null )
-        return;
-
-    client.printMessage( WE_MSG_RECENT_DISCONNECTS_HEADER );
-
     String data;
     if ( !WE_LoadFile( WE_RECENT_DISCONNECTS_PATH, data ) || data.len() == 0 )
     {
-        client.printMessage( WE_MSG_RECENT_DISCONNECTS_NONE );
-        return;
+        WE_RecentDisconnects_ClearWork();
+        return 0;
     }
 
     WE_RecentDisconnects_ParseIntoWork( data );
@@ -309,28 +328,148 @@ void WE_RecentDisconnects_Print( Client @client )
         weRecentUnix[i] = WE_UserLeaveUnix( weRecentIds[i] );
     WE_RecentDisconnects_SortWorkDesc();
 
-    int shown = 0;
-    for ( int i = 0; i < weRecentCount && shown < WE_MAX_RECENT_DISCONNECTS; i++ )
+    int write = 0;
+    for ( int i = 0; i < weRecentCount; i++ )
     {
         String steamid = weRecentIds[i];
         if ( steamid.len() == 0 )
             continue;
         if ( WE_ClientIsOnlineBySteamId( steamid ) )
             continue;
+        if ( write >= WE_MAX_RECENT_DISCONNECTS )
+            break;
+        if ( write != i )
+        {
+            weRecentIds[write] = steamid;
+            weRecentUnix[write] = weRecentUnix[i];
+        }
+        write++;
+    }
+    weRecentCount = write;
+    return weRecentCount;
+}
 
-        String name = WE_UserGet( steamid, "name" );
-        if ( name.len() == 0 )
-            name = "(unknown)";
-        String when = WE_UserLeaveHuman( steamid );
-        if ( when.len() == 0 )
-            when = "?";
+void WE_RecentDisconnects_PrintLine( Client @to, const String &in steamid )
+{
+    if ( @to == null || steamid.len() == 0 )
+        return;
 
-        client.printMessage( name + " [" + steamid + "] " + when + "\n" );
-        shown++;
+    String name = WE_UserGet( steamid, "name" );
+    if ( name.len() == 0 )
+        name = "(unknown)";
+    String when = WE_UserLeaveHuman( steamid );
+    if ( when.len() == 0 )
+        when = "?";
+
+    to.printMessage( name + " [" + steamid + "] " + when + "\n" );
+}
+
+String WE_RecentDisconnects_FindBy( const String &in query, bool byName )
+{
+    if ( query.len() == 0 )
+        return "";
+
+    WE_RecentDisconnects_LoadListed();
+
+    int matchCount = 0;
+    int exactCount = 0;
+    String found = "";
+    String exact = "";
+
+    for ( int i = 0; i < weRecentCount; i++ )
+    {
+        String steamid = weRecentIds[i];
+        bool matches = byName
+            ? WE_RecentDisconnects_NameMatches( steamid, query )
+            : WE_RecentDisconnects_SteamMatches( steamid, query );
+        if ( !matches )
+            continue;
+
+        matchCount++;
+        found = steamid;
+        bool isExact = byName
+            ? WE_RecentDisconnects_NameEquals( steamid, query )
+            : WE_EqualsIgnoreCase( steamid, query );
+        if ( isExact )
+        {
+            exactCount++;
+            exact = steamid;
+        }
     }
 
-    if ( shown == 0 )
+    if ( matchCount == 1 )
+        return found;
+    if ( exactCount == 1 )
+        return exact;
+    return "";
+}
+
+String WE_RecentDisconnects_FindName( const String &in query )
+{
+    return WE_RecentDisconnects_FindBy( query, true );
+}
+
+String WE_RecentDisconnects_FindSteam( const String &in query )
+{
+    return WE_RecentDisconnects_FindBy( query, false );
+}
+
+bool WE_RecentDisconnects_QueryAmbiguousBy( const String &in query, bool byName )
+{
+    if ( query.len() == 0 )
+        return false;
+    if ( WE_RecentDisconnects_FindBy( query, byName ).len() > 0 )
+        return false;
+
+    WE_RecentDisconnects_LoadListed();
+    int matchCount = 0;
+    for ( int i = 0; i < weRecentCount; i++ )
+    {
+        bool matches = byName
+            ? WE_RecentDisconnects_NameMatches( weRecentIds[i], query )
+            : WE_RecentDisconnects_SteamMatches( weRecentIds[i], query );
+        if ( !matches )
+            continue;
+        matchCount++;
+        if ( matchCount > 1 )
+            return true;
+    }
+    return false;
+}
+
+void WE_RecentDisconnects_PrintMatchesBy( Client @to, const String &in query, bool byName )
+{
+    if ( @to == null )
+        return;
+
+    WE_RecentDisconnects_LoadListed();
+    for ( int i = 0; i < weRecentCount; i++ )
+    {
+        String steamid = weRecentIds[i];
+        bool matches = byName
+            ? WE_RecentDisconnects_NameMatches( steamid, query )
+            : WE_RecentDisconnects_SteamMatches( steamid, query );
+        if ( !matches )
+            continue;
+        WE_RecentDisconnects_PrintLine( to, steamid );
+    }
+}
+
+void WE_RecentDisconnects_Print( Client @client )
+{
+    if ( @client == null )
+        return;
+
+    client.printMessage( WE_MSG_RECENT_DISCONNECTS_HEADER );
+
+    if ( WE_RecentDisconnects_LoadListed() <= 0 )
+    {
         client.printMessage( WE_MSG_RECENT_DISCONNECTS_NONE );
+        return;
+    }
+
+    for ( int i = 0; i < weRecentCount; i++ )
+        WE_RecentDisconnects_PrintLine( client, weRecentIds[i] );
 }
 
 void WE_RecentDisconnects_MergeConnected()

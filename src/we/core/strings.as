@@ -22,7 +22,7 @@ const String WE_MSG_KICK_USAGE = "usage: we_kick <userid> [reason]\n";
 const String WE_MSG_KICK_DONE = S_COLOR_GREEN + "Kicked.\n";
 const String WE_MSG_KICK_NOTIFY_PREFIX = S_COLOR_RED + "You were kicked. Reason: " + S_COLOR_WHITE;
 
-const String WE_MSG_BAN_USAGE = "usage: we_ban <userid|steam_id> [reason]\n";
+const String WE_MSG_BAN_USAGE = "usage: we_ban <userid|name|steam_id> [reason]\n";
 const String WE_MSG_BAN_DONE = S_COLOR_GREEN + "Banned.\n";
 const String WE_MSG_BAN_FULL = S_COLOR_RED + "Ban list is full.\n";
 const String WE_MSG_BAN_NO_STEAM = S_COLOR_RED + "Target has no steam_id (ignored).\n";
@@ -51,13 +51,14 @@ const String WE_MSG_CHANGETEAM_USAGE = "usage: we_changeteam <userid> <team>\n";
 const String WE_MSG_CHANGETEAM_DONE = S_COLOR_GREEN + "Team changed.\n";
 const String WE_MSG_CHANGETEAM_NOTIFY = S_COLOR_YELLOW + "Your team was changed by an operator.\n";
 const String WE_MSG_CHANGETEAM_SAME = S_COLOR_YELLOW + "Player is already on that team.\n";
+const String WE_MSG_CHANGETEAM_INVALID = S_COLOR_RED + "Cannot join that team in this gametype.\n";
 
 const String WE_MSG_HELP =
     S_COLOR_CYAN + "warfork-extended commands:\n"
     + "  we_help\n"
     + "  we_users\n"
     + "  we_kick <userid> [reason]\n"
-    + "  we_ban <userid|steam_id> [reason]\n"
+    + "  we_ban <userid|name|steam_id> [reason]\n"
     + "  we_unban [index]\n"
     + "  we_weaponGive <userid> <weaponid>\n"
     + "  we_weaponRemove <userid> <weaponid>\n"

@@ -25,6 +25,59 @@ void WE_Cmd_Ban_PrintTargets( Client @client )
     WE_RecentDisconnects_Print( client );
 }
 
+bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const String &in reason )
+{
+    String actorSteam = WE_SteamId( client );
+    if ( actorSteam.len() > 0 && actorSteam == steamid )
+    {
+        client.printMessage( WE_MSG_NO_SELF );
+        return true;
+    }
+
+    String name = WE_UserGet( steamid, "name" );
+    String clan = WE_UserGet( steamid, "clan" );
+
+    WE_Ban_Reload();
+    if ( !WE_Ban_AddSteam( client, steamid, name, clan, reason ) )
+    {
+        client.printMessage( WE_MSG_BAN_FULL );
+        return true;
+    }
+
+    Client @online = @WE_FindClientBySteamId( steamid );
+    if ( @online != null )
+    {
+        online.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
+        WE_KickClient( online, reason );
+    }
+
+    client.printMessage( WE_MSG_BAN_DONE );
+    return true;
+}
+
+bool WE_Cmd_Ban_ApplyClient( Client @client, Client @target, const String &in reason )
+{
+    if ( !WE_RequireNotSelf( client, target ) )
+        return true;
+    if ( WE_SteamId( target ).len() == 0 )
+    {
+        client.printMessage( WE_MSG_BAN_NO_STEAM );
+        return true;
+    }
+
+    WE_Ban_Reload();
+    if ( !WE_Ban_Add( client, target, reason ) )
+    {
+        client.printMessage( WE_MSG_BAN_FULL );
+        return true;
+    }
+
+    target.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
+    WE_KickClient( target, reason );
+    client.printMessage( WE_MSG_BAN_DONE );
+    return true;
+}
+
 bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_ban.integer != 1 )
@@ -42,33 +95,13 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
         return true;
     }
 
+    String reason = WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) );
+    if ( reason.len() == 0 )
+        reason = WE_MSG_NO_REASON;
+
     Client @target = @WE_FindClient( query, true );
     if ( @target != null )
-    {
-        if ( !WE_RequireNotSelf( client, target ) )
-            return true;
-        if ( WE_SteamId( target ).len() == 0 )
-        {
-            client.printMessage( WE_MSG_BAN_NO_STEAM );
-            return true;
-        }
-
-        String reason = WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) );
-        if ( reason.len() == 0 )
-            reason = WE_MSG_NO_REASON;
-
-        WE_Ban_Reload();
-        if ( !WE_Ban_Add( client, target, reason ) )
-        {
-            client.printMessage( WE_MSG_BAN_FULL );
-            return true;
-        }
-
-        target.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
-        WE_KickClient( target, reason );
-        client.printMessage( WE_MSG_BAN_DONE );
-        return true;
-    }
+        return WE_Cmd_Ban_ApplyClient( client, target, reason );
 
     if ( WE_ClientQueryAmbiguous( query, true ) )
     {
@@ -77,40 +110,40 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
         return true;
     }
 
-    // Offline ban by steam_id (must be known from user file or recent list).
-    if ( WE_RecentDisconnects_IsKnown( query ) )
+    Client @bySteam = @WE_FindClientBySteamIdFragment( query, true );
+    String recentSteam = WE_RecentDisconnects_FindSteam( query );
+    bool steamAmbiguous = WE_ClientSteamQueryAmbiguous( query, true )
+        || WE_RecentDisconnects_QueryAmbiguousBy( query, false );
+    if ( @bySteam != null && recentSteam.len() > 0 && WE_SteamId( bySteam ) != recentSteam )
+        steamAmbiguous = true;
+
+    if ( steamAmbiguous )
     {
-        String actorSteam = WE_SteamId( client );
-        if ( actorSteam.len() > 0 && actorSteam == query )
-        {
-            client.printMessage( WE_MSG_NO_SELF );
-            return true;
-        }
-
-        String reason = WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) );
-        if ( reason.len() == 0 )
-            reason = WE_MSG_NO_REASON;
-
-        String name = WE_UserGet( query, "name" );
-        String clan = WE_UserGet( query, "clan" );
-
-        WE_Ban_Reload();
-        if ( !WE_Ban_AddSteam( client, query, name, clan, reason ) )
-        {
-            client.printMessage( WE_MSG_BAN_FULL );
-            return true;
-        }
-
-        Client @online = @WE_FindClientBySteamId( query );
-        if ( @online != null )
-        {
-            online.printMessage( WE_MSG_BAN_NOTIFY_PREFIX + reason + "\n" );
-            WE_KickClient( online, reason );
-        }
-
-        client.printMessage( WE_MSG_BAN_DONE );
+        client.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_PrintClientSteamMatches( client, query, true );
+        WE_RecentDisconnects_PrintMatchesBy( client, query, false );
         return true;
     }
+
+    if ( @bySteam != null )
+        return WE_Cmd_Ban_ApplyClient( client, bySteam, reason );
+    if ( recentSteam.len() > 0 )
+        return WE_Cmd_Ban_ApplySteam( client, recentSteam, reason );
+
+    String recentName = WE_RecentDisconnects_FindName( query );
+    if ( recentName.len() > 0 )
+        return WE_Cmd_Ban_ApplySteam( client, recentName, reason );
+
+    if ( WE_RecentDisconnects_QueryAmbiguousBy( query, true ) )
+    {
+        client.printMessage( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_RecentDisconnects_PrintMatchesBy( client, query, true );
+        return true;
+    }
+
+    // Offline ban by full steam_id (user file or recent list).
+    if ( WE_RecentDisconnects_IsKnown( query ) )
+        return WE_Cmd_Ban_ApplySteam( client, query, reason );
 
     WE_Cmd_Ban_PrintTargets( client );
     return true;

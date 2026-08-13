@@ -17,7 +17,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | `we_help` | everyone | List commands |
 | `we_users` | operator | List connected players + steam_id |
 | `we_kick <userid> [reason]` | operator | Kick a player (list if no arg) |
-| `we_ban <userid|steam_id> [reason]` | operator | Ban player (list if no arg) |
+| `we_ban <userid|name|steam_id> [reason]` | operator | Ban player (list if no arg) |
 | `we_unban [index]` | operator | Unban player (list if no arg) |
 | `we_weaponGive <userid> <weaponid>` | operator | Give an item (id or unique name fragment) |
 | `we_weaponRemove <userid> <weaponid>` | operator | Remove an item (id or unique name fragment) |
@@ -27,7 +27,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
-- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (human UTC time); pass a steam_id from that list to ban someone who already left
+- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (human UTC time). Targets: player slot, unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
 - `weaponid` is an item tag, or a unique fragment of the item name / short name
 - `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
 
