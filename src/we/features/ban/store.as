@@ -208,7 +208,10 @@ void WE_Ban_PrintList( WE_Reply @reply )
         if ( weBanSteamId[i].len() == 0 )
             continue;
         if ( shown == 0 )
+        {
+            reply.AddTitle( WE_MSG_TITLE_BANNED );
             WE_Reply_BeginPlayersTable( reply, false );
+        }
         WE_Reply_AddOfflineRow( reply, i, weBanUsername[i], weBanClan[i], weBanSteamId[i], false );
         shown++;
     }

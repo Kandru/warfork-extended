@@ -35,6 +35,15 @@ class WE_Reply
             this.text += "\n";
     }
 
+    // Section title (header color). Prefer this as the first line so [WE] is not on a table header.
+    void AddTitle( const String &in title )
+    {
+        this.FlushTable();
+        this.text += WE_Theme_Color( "header" ) + title;
+        if ( title.len() == 0 || title.substr( title.len() - 1, 1 ) != "\n" )
+            this.text += "\n";
+    }
+
     void AddItem( const String &in line )
     {
         this.FlushTable();
@@ -287,6 +296,7 @@ void WE_Reply_AddPlayers( WE_Reply @reply, bool includeSpectators, bool withTeam
     if ( @reply == null )
         return;
 
+    reply.AddTitle( WE_MSG_TITLE_PLAYERS );
     WE_Reply_BeginPlayersTable( reply, withTeam );
     for ( int i = 0; i < maxClients; i++ )
     {
@@ -312,6 +322,7 @@ void WE_Reply_AddPlayerMatches( WE_Reply @reply, const String &in query, bool in
             continue;
         if ( !started )
         {
+            reply.AddTitle( WE_MSG_TITLE_PLAYERS );
             WE_Reply_BeginPlayersTable( reply, withTeam );
             started = true;
         }
@@ -334,6 +345,7 @@ void WE_Reply_AddPlayerSteamMatches( WE_Reply @reply, const String &in query, bo
             continue;
         if ( !started )
         {
+            reply.AddTitle( WE_MSG_TITLE_PLAYERS );
             WE_Reply_BeginPlayersTable( reply, withTeam );
             started = true;
         }
@@ -371,6 +383,7 @@ void WE_Reply_AddRecentDisconnects( WE_Reply @reply )
     if ( WE_RecentDisconnects_LoadListed() <= 0 )
         return;
 
+    reply.AddTitle( WE_MSG_TITLE_RECENT );
     WE_Reply_BeginPlayersTable( reply, false );
     for ( int i = 0; i < weRecentCount; i++ )
     {
@@ -403,6 +416,7 @@ void WE_Reply_AddRecentMatches( WE_Reply @reply, const String &in query, bool by
             continue;
         if ( !started )
         {
+            reply.AddTitle( WE_MSG_TITLE_RECENT );
             WE_Reply_BeginPlayersTable( reply, false );
             started = true;
         }
@@ -417,6 +431,7 @@ void WE_Reply_AddItems( WE_Reply @reply )
     if ( @reply == null )
         return;
 
+    reply.AddTitle( WE_MSG_TITLE_ITEMS );
     reply.TableHeader3( "#ID", "Name", "Slug" );
     for ( int i = 1; i < WE_ITEM_TAG_MAX; i++ )
     {
@@ -437,6 +452,7 @@ void WE_Reply_AddTeams( WE_Reply @reply )
     if ( @reply == null )
         return;
 
+    reply.AddTitle( WE_MSG_TITLE_TEAMS );
     reply.TableHeader3( "#ID", "Name", "Slug" );
     for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
     {
@@ -459,6 +475,7 @@ void WE_Reply_AddAwardsTable( WE_Reply @reply )
 {
     if ( @reply == null )
         return;
+    reply.AddTitle( WE_MSG_TITLE_AWARDS );
     reply.TableHeader2( "#Count", "Award" );
 }
 

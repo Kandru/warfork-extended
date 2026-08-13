@@ -1,6 +1,7 @@
 bool WE_Cmd_Help( Client @client, const String &argsString, int argc )
 {
     WE_Reply reply;
+    reply.AddTitle( WE_MSG_TITLE_COMMANDS );
     reply.TableHeader3( "Command", "Parameters", "Description" );
     for ( int i = 0; i < weCmdCount; i++ )
     {

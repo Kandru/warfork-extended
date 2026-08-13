@@ -23,11 +23,15 @@ void WE_Cmd_Ban_PrintTargets( Client @client )
     WE_Reply reply;
     reply.AddLine( WE_MSG_BAN_USAGE );
     WE_Reply_AddPlayers( reply, true, false );
-    reply.AddLine( "Recently disconnected:" );
     if ( WE_RecentDisconnects_LoadListed() <= 0 )
+    {
+        reply.AddTitle( WE_MSG_TITLE_RECENT );
         reply.AddLine( WE_MSG_RECENT_DISCONNECTS_NONE );
+    }
     else
+    {
         WE_Reply_AddRecentDisconnects( reply );
+    }
     reply.Send( client );
 }
 

@@ -8,6 +8,13 @@ const String WE_MSG_RESPAWN_DISABLED = S_COLOR_YELLOW + "Respawn feature disable
 const String WE_MSG_CHANGETEAM_DISABLED = S_COLOR_YELLOW + "Changeteam feature disabled (we_feature_changeteam 0).\n";
 
 const String WE_MSG_NO_REASON = "no reason given";
+const String WE_MSG_TITLE_COMMANDS = "Commands:";
+const String WE_MSG_TITLE_PLAYERS = "Players:";
+const String WE_MSG_TITLE_ITEMS = "Items:";
+const String WE_MSG_TITLE_TEAMS = "Teams:";
+const String WE_MSG_TITLE_AWARDS = "Your awards:";
+const String WE_MSG_TITLE_RECENT = "Recently disconnected:";
+const String WE_MSG_TITLE_BANNED = "Banned players:";
 const String WE_MSG_PLAYER_AMBIGUOUS = S_COLOR_RED + "Ambiguous player (matches more than one). Be more specific.\n";
 const String WE_MSG_ITEM_AMBIGUOUS = S_COLOR_RED + "Ambiguous item (matches more than one). Be more specific.\n";
 const String WE_MSG_ITEM_NOT_FOUND = S_COLOR_RED + "Unknown item.\n";
