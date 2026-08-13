@@ -1,0 +1,6 @@
+# Install under /opt/we-report-notify (make go-install), edit config.yaml, then:
+#   crontab -e
+# and paste (or merge) the line below.
+#
+# Runs once per minute: scan report.txt files, post new reports, exit.
+* * * * * /opt/we-report-notify/we-report-notify -once

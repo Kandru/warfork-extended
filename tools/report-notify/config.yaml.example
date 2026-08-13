@@ -1,0 +1,15 @@
+# Used when a server has no webhooks of its own.
+webhooks:
+  - "https://discord.com/api/webhooks/ID/TOKEN"
+
+# Used if inotify/fsnotify is unavailable (long-running mode only).
+poll_interval: 1m
+
+servers:
+  eu-dm:
+    path: /path/to/basewf/warfork-extended/report.txt
+  # Optional per-server webhooks replace the global list for that file:
+  # na-ca:
+  #   path: /path/to/other/basewf/warfork-extended/report.txt
+  #   webhooks:
+  #     - "https://discord.com/api/webhooks/OTHER/TOKEN"

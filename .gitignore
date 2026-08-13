@@ -5,6 +5,11 @@ idea/
 *.pk3
 scripts/__pycache__/
 scripts/inject/__pycache__/
+.tools-go/
+
+# Report-notify local runtime (keep examples only)
+tools/report-notify/config.yaml
+tools/report-notify/report-notify.state.json
 
 # Custom gametypes (optional local overlay for INCLUDE_CUSTOM=1; not in releases)
 gamemodes/custom/

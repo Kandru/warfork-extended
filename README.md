@@ -42,6 +42,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - Linux
 - `python3`, `zip`, `make` (and `mv`/`cp` via coreutils)
+- `go` 1.22+ (only to build the optional report webhook notifier)
 
 ## Build
 
@@ -53,6 +54,8 @@ cp config.mk.example config.mk
 make          # help
 make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3 (stock GTs + WE only)
 make dev      # debug inject + copy pk3 into WARFORK_BASEWF
+make go       # dist/go/we-report-notify (report Discord webhooks)
+make go-install  # install binary + example config to /opt/we-report-notify
 ```
 
 Drop the pk3 into your server `basewf` folder (remove older `gt_warfork_extended_*.pk3` first if not using `make dev`).
@@ -107,6 +110,51 @@ Line format: `id|enabled|kind|freq|p1|p2|title|description`
 
 Player reports append to `basewf/warfork-extended/report.txt` (CSV: unix, reporter steam/name/clan, reported steam/name/clan, score/frags/deaths/suicides, reason). 60s cooldown per reporter.
 
+## Report webhooks
+
+Optional sidecar [`tools/report-notify/`](tools/report-notify/) watches one or more `report.txt` files and posts Discord webhook embeds when players file reports. It is **not** inside the pk3; run it on the host (or any machine that can read the report files).
+
+### Config
+
+Copy [`tools/report-notify/config.yaml.example`](tools/report-notify/config.yaml.example) to `config.yaml` next to the binary (or pass `-config`). Map server display names to paths; set a global webhook list and/or per-server webhooks:
+
+```yaml
+webhooks:
+  - "https://discord.com/api/webhooks/ID/TOKEN"
+
+poll_interval: 1m
+
+servers:
+  eu-dm:
+    path: /path/to/basewf/warfork-extended/report.txt
+  na-ca:
+    path: /path/to/other/basewf/warfork-extended/report.txt
+    webhooks:
+      - "https://discord.com/api/webhooks/OTHER/TOKEN"
+```
+
+If a server has its own `webhooks` list, that list is used instead of the global one. Offset state is stored in `report-notify.state.json` next to the config (first sighting of a file seeks to EOF so history is not flooded).
+
+### Install (cron every minute)
+
+Recommended production setup:
+
+```bash
+make go-install                    # PREFIX=/opt/we-report-notify
+sudo $EDITOR /opt/we-report-notify/config.yaml
+sudo crontab -e                    # paste tools/report-notify/crontab.example
+```
+
+Crontab line:
+
+```
+* * * * * /opt/we-report-notify/we-report-notify -once
+```
+
+`-once` scans, posts any new lines, then exits (safe for cron; no stacked daemons).
+
+Alternatively run long-lived for near-instant pings (`/opt/we-report-notify/we-report-notify`, uses fsnotify with poll fallback). GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3.
+
 ## Extending (features)
 
 Add AngelScript under `src/we/features/<name>/`, then register in that feature's `*_Register()`:
@@ -128,7 +176,7 @@ Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerD
 ## Version / releases
 
 - Bump [`VERSION`](VERSION) (semver).
-- Pushing a change to `VERSION` on `main` runs GitHub Actions: build prod pk3 + GitHub Release with commits since the previous tag.
+- Pushing a change to `VERSION` on `main` runs GitHub Actions: build prod pk3 + Linux `we-report-notify` binary, then a GitHub Release with both assets and commits since the previous tag.
 
 ## Layout
 
@@ -138,7 +186,9 @@ gamemodes/custom/      # optional local overlay (INCLUDE_CUSTOM=1 only)
 src/we/                # framework AngelScript (core/, utils/, player/, features/)
 scripts/inject/        # Python inject package
 scripts/inject.py      # thin CLI entry
+tools/report-notify/   # Discord webhook sidecar for report.txt
 dist/debug|prod/       # WE pk3 output
+dist/go/               # we-report-notify binaries
 dist/custom/           # scratch for make custom
 ```
 
