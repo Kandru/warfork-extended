@@ -13,7 +13,7 @@ void WE_Welcome_OnEnterGame( Client @client )
 
     String body = WE_Theme_Color( "body" );
     String accent = WE_Theme_Color( "accent" );
-    G_PrintMsg( ent,
+    WE_PrintMsg( ent,
         WE_Theme_Prefix()
         + WE_MSG_WELCOME_HEY
         + client.name

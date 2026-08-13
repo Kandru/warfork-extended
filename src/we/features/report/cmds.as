@@ -34,7 +34,7 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
     reply.AddLine( WE_MSG_REPORT_REVIEW );
     reply.Send( client );
 
-    G_PrintMsg( null,
+    WE_PrintMsg( null,
         WE_MSG_REPORT_CHAT_PREFIX
         + client.name
         + WE_MSG_REPORT_CHAT_REPORTED

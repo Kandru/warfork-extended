@@ -3,11 +3,71 @@ const int WE_MATCH_UNIQUE = 1;
 const int WE_MATCH_EXACT = 2;
 const int WE_MATCH_AMBIGUOUS = 3;
 
+// printMessage / G_PrintMsg truncate around MAX_STRING_CHARS (1024).
+const uint WE_PRINT_MAX = 1000;
+
+uint WE_Print_Take( const String &in msg, uint pos, uint room )
+{
+    if ( room < 1 )
+        room = 1;
+    if ( pos >= msg.len() )
+        return 0;
+    uint left = msg.len() - pos;
+    if ( left <= room )
+        return left;
+    uint split = 0;
+    for ( uint i = 0; i < room; i++ )
+    {
+        if ( msg.substr( pos + i, 1 ) == "\n" )
+            split = i + 1;
+    }
+    if ( split > 0 )
+        return split;
+    return room;
+}
+
 void WE_Print( Client @client, const String &in msg )
 {
     if ( @client == null )
         return;
-    client.printMessage( WE_Theme_Prefix() + msg );
+    if ( msg.len() == 0 )
+        return;
+
+    String prefix = WE_Theme_Prefix();
+    uint prefixLen = prefix.len();
+    uint pos = 0;
+    bool first = true;
+    while ( pos < msg.len() )
+    {
+        uint room = WE_PRINT_MAX;
+        if ( first && room > prefixLen )
+            room -= prefixLen;
+        uint take = WE_Print_Take( msg, pos, room );
+        if ( take == 0 )
+            break;
+        String chunk = msg.substr( pos, take );
+        if ( first )
+            client.printMessage( prefix + chunk );
+        else
+            client.printMessage( chunk );
+        first = false;
+        pos += take;
+    }
+}
+
+void WE_PrintMsg( Entity @ent, const String &in msg )
+{
+    if ( msg.len() == 0 )
+        return;
+    uint pos = 0;
+    while ( pos < msg.len() )
+    {
+        uint take = WE_Print_Take( msg, pos, WE_PRINT_MAX );
+        if ( take == 0 )
+            break;
+        G_PrintMsg( ent, msg.substr( pos, take ) );
+        pos += take;
+    }
 }
 
 String WE_StripColors( const String &in text )

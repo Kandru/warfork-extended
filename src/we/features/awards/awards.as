@@ -1017,7 +1017,7 @@ void WE_Awards_GrantIndex( Client @client, int index )
         String prefix = WE_Theme_Prefix();
         Entity @selfEnt = @client.getEnt();
         if ( @selfEnt != null )
-            G_PrintMsg( selfEnt, prefix + awardMsg + "\n" );
+            WE_PrintMsg( selfEnt, prefix + awardMsg + "\n" );
 
         String others = prefix + client.name + WE_MSG_AWARD_CHAT_GOT
                         + S_COLOR_YELLOW + title
@@ -1034,7 +1034,7 @@ void WE_Awards_GrantIndex( Client @client, int index )
             Entity @otherEnt = @other.getEnt();
             if ( @otherEnt == null )
                 continue;
-            G_PrintMsg( otherEnt, others );
+            WE_PrintMsg( otherEnt, others );
         }
     }
 

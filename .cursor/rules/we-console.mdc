@@ -7,6 +7,7 @@ alwaysApply: true
 # WE console replies
 
 - Multi-line command output: build with `WE_Reply`, call `Send` once. Never `WE_Print` per list/table row.
+- `WE_Print` / `WE_Reply.Send` split at ~1000 chars (engine `printMessage` cap). Do not call `printMessage` / `G_PrintMsg` for command replies — chat/HUD lines use `WE_PrintMsg`.
 - `[WE]` prefix only on the first line (`WE_Print` / `Send`). Theme: grey brackets, orange `WE` via `WE_Theme_Prefix`.
 - First line must be a title or usage (`AddTitle` / `AddLine`), never a table header — so `[WE]` is not stuck on column labels.
 - List items: `AddItem` → grey `- `. Multi-field rows: tables (`TableHeader*` / `TableAddRow` / `TableSet`), not ad-hoc lists.
