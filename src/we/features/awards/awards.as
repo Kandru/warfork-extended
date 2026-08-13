@@ -167,6 +167,11 @@ String WE_Awards_Key( const String &in id )
     return WE_AWARD_KEY_PREFIX + id;
 }
 
+bool WE_Awards_InPlaytime()
+{
+    return ( match.getState() == MATCH_STATE_PLAYTIME );
+}
+
 void WE_Awards_ClearCatalog()
 {
     weAwardCount = 0;
@@ -588,6 +593,8 @@ void WE_Awards_Think()
 {
     if ( we_feature_awards.integer != 1 )
         return;
+    if ( !WE_Awards_InPlaytime() )
+        return;
     // Spawn-edge tracking is needed for fast_death even when ping/spec/still are empty
     if ( weAwardBucketPingCount == 0 && weAwardBucketSpecCount == 0
          && weAwardBucketStillCount == 0 && weAwardBucketKillCount == 0 )
@@ -602,6 +609,8 @@ void WE_Awards_Think()
 
 void WE_Awards_OnKill( Client @attackerClient, const String &in args )
 {
+    if ( !WE_Awards_InPlaytime() )
+        return;
     if ( weAwardBucketKillCount == 0 )
         return;
 
@@ -712,6 +721,8 @@ void WE_Awards_OnEnterGame( Client @client )
     weAwardClients[pn].Clear();
 
     if ( WE_SteamId( client ).len() == 0 )
+        return;
+    if ( !WE_Awards_InPlaytime() )
         return;
 
     for ( int b = 0; b < weAwardBucketEnterCount; b++ )
