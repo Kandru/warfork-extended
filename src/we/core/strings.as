@@ -66,13 +66,18 @@ const String WE_MSG_AWARD_REMOVE_NONE = S_COLOR_YELLOW + "Player does not have t
 const String WE_MSG_AWARD_UNKNOWN = S_COLOR_RED + "Unknown award id.\n";
 
 const String WE_MSG_REPORT_DISABLED = S_COLOR_YELLOW + "Report feature disabled (we_feature_report 0).\n";
-const String WE_MSG_REPORT_USAGE = "usage: we_report <userid> [reason]\n";
+const String WE_MSG_REPORT_USAGE = "usage: report <userid> [reason]\n";
 const String WE_MSG_REPORT_COOLDOWN = S_COLOR_YELLOW + "Please wait before filing another report.\n";
 const String WE_MSG_REPORT_FAILED = S_COLOR_RED + "Could not write report (try again).\n";
 const String WE_MSG_REPORT_FILED_PREFIX = S_COLOR_GREEN + "Report filed against ";
 const String WE_MSG_REPORT_FILED_SUFFIX = ".\n";
 const String WE_MSG_REPORT_REASON_PREFIX = "Reason: ";
 const String WE_MSG_REPORT_REVIEW = "An admin will review it.\n";
+const String WE_MSG_REPORT_DEATH_HINT_PREFIX = S_COLOR_YELLOW + "Type " + S_COLOR_WHITE + "report ";
+const String WE_MSG_REPORT_DEATH_HINT_MID = S_COLOR_YELLOW + " to report ";
+const String WE_MSG_REPORT_CHAT_PREFIX = S_COLOR_YELLOW + "[WE] ";
+const String WE_MSG_REPORT_CHAT_REPORTED = S_COLOR_WHITE + " reported ";
+const String WE_MSG_REPORT_CHAT_FOR = S_COLOR_WHITE + " for " + S_COLOR_CYAN;
 
 const String WE_MSG_HELP =
     S_COLOR_CYAN + "warfork-extended commands:\n"
@@ -89,7 +94,7 @@ const String WE_MSG_HELP =
     + "  we_awards\n"
     + "  we_awardGive <userid> <award_id>\n"
     + "  we_awardRemove <userid> <award_id>\n"
-    + "  we_report <userid> [reason]\n";
+    + "  (we_)report <userid> [reason]\n";
 
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";
