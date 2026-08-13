@@ -6,6 +6,8 @@ bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
     Client @target = @WE_Menu_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true );
     if ( @target == null )
         return true;
+    if ( !WE_RequireNotSelf( client, target ) )
+        return true;
 
     String reason = WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) );
     if ( reason.len() == 0 )
@@ -28,6 +30,8 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     Client @target = @WE_Menu_ClientFromArg( client, argsString, WE_MSG_BAN_USAGE, true );
     if ( @target == null )
+        return true;
+    if ( !WE_RequireNotSelf( client, target ) )
         return true;
     if ( WE_SteamId( target ).len() == 0 )
     {

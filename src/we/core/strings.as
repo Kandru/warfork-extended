@@ -1,6 +1,7 @@
 // English UI strings
 
 const String WE_MSG_ADMIN_REQUIRED = S_COLOR_RED + "Operator privileges required.\n";
+const String WE_MSG_NO_SELF = S_COLOR_RED + "You cannot do that to yourself.\n";
 const String WE_MSG_DISABLED = S_COLOR_YELLOW + "warfork-extended is disabled (we_enabled 0).\n";
 const String WE_MSG_USERS_DISABLED = S_COLOR_YELLOW + "Users feature disabled (we_feature_users 0).\n";
 const String WE_MSG_BAN_DISABLED = S_COLOR_YELLOW + "Ban feature disabled (we_feature_ban 0).\n";

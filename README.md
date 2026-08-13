@@ -15,7 +15,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | Command | Who | Description |
 |---------|-----|-------------|
 | `we_help` | everyone | List commands |
-| `we_users` | everyone | List connected players + steam_id |
+| `we_users` | operator | List connected players + steam_id |
 | `we_kick <playerNum> [reason]` | operator | Kick a player |
 | `we_ban <playerNum> [reason]` | operator | Ban by steam_id + kick |
 | `we_unban [index]` | operator | List bans / remove by index |

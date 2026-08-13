@@ -13,6 +13,16 @@ bool WE_RequireOperator( Client @client )
     return false;
 }
 
+bool WE_RequireNotSelf( Client @actor, Client @target )
+{
+    if ( @actor == null || @target == null )
+        return true;
+    if ( actor.playerNum != target.playerNum )
+        return true;
+    actor.printMessage( WE_MSG_NO_SELF );
+    return false;
+}
+
 void WE_ExecServer( const String &in cmd )
 {
     G_CmdExecute( cmd );
