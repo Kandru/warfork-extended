@@ -476,7 +476,7 @@ void WE_Reply_AddAwardsTable( WE_Reply @reply )
     if ( @reply == null )
         return;
     reply.AddTitle( WE_MSG_TITLE_AWARDS );
-    reply.TableHeader2( "#Count", "Award" );
+    reply.TableHeader3( "#Count", "Award", "Description" );
 }
 
 void WE_Reply_AddUsagePlayers( WE_Reply @reply, const String &in usage, bool includeSpectators, bool withTeam )

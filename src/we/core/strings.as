@@ -13,6 +13,7 @@ const String WE_MSG_TITLE_PLAYERS = "Players:";
 const String WE_MSG_TITLE_ITEMS = "Items:";
 const String WE_MSG_TITLE_TEAMS = "Teams:";
 const String WE_MSG_TITLE_AWARDS = "Your awards:";
+const String WE_MSG_TITLE_AWARDS_AVAILABLE = "Available awards:";
 const String WE_MSG_TITLE_RECENT = "Recently disconnected:";
 const String WE_MSG_TITLE_BANNED = "Banned players:";
 const String WE_MSG_PLAYER_AMBIGUOUS = S_COLOR_RED + "Ambiguous player (matches more than one). Be more specific.\n";
@@ -57,6 +58,7 @@ const String WE_MSG_CHANGETEAM_INVALID = S_COLOR_RED + "Cannot join that team in
 
 const String WE_MSG_AWARDS_DISABLED = S_COLOR_YELLOW + "Awards feature disabled (we_feature_awards 0).\n";
 const String WE_MSG_AWARDS_NONE = S_COLOR_YELLOW + "No awards yet.\n";
+const String WE_MSG_AWARDS_CATALOG_NONE = S_COLOR_YELLOW + "No awards defined.\n";
 const String WE_MSG_AWARDS_NO_STEAM = S_COLOR_RED + "No steam_id (ignored).\n";
 const String WE_MSG_AWARD_GIVE_USAGE = "usage: we_awardGive <userid> <award_id>\n";
 const String WE_MSG_AWARD_GIVE_DONE = S_COLOR_GREEN + "Award granted.\n";

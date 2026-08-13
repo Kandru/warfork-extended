@@ -236,6 +236,102 @@ int WE_Awards_FreqFromName( const String &in name )
     return -1;
 }
 
+String WE_Awards_KindName( int kind )
+{
+    if ( kind == WE_AWARD_KIND_PING_HIGH )
+        return "ping_high";
+    if ( kind == WE_AWARD_KIND_VICTIM_STREAK )
+        return "victim_streak";
+    if ( kind == WE_AWARD_KIND_REVENGE )
+        return "revenge";
+    if ( kind == WE_AWARD_KIND_SPEC_TIME )
+        return "spec_time";
+    if ( kind == WE_AWARD_KIND_SUICIDE )
+        return "suicide";
+    if ( kind == WE_AWARD_KIND_FAST_DEATH )
+        return "fast_death";
+    if ( kind == WE_AWARD_KIND_KILL_THEN_DIE )
+        return "kill_then_die";
+    if ( kind == WE_AWARD_KIND_STILLNESS )
+        return "stillness";
+    if ( kind == WE_AWARD_KIND_MANUAL )
+        return "manual";
+    if ( kind == WE_AWARD_KIND_KILL_STREAK )
+        return "kill_streak";
+    if ( kind == WE_AWARD_KIND_FIRST_BLOOD )
+        return "first_blood";
+    if ( kind == WE_AWARD_KIND_ALIVE_TIME )
+        return "alive_time";
+    if ( kind == WE_AWARD_KIND_DMG_DEALT )
+        return "dmg_dealt";
+    if ( kind == WE_AWARD_KIND_DMG_TAKEN )
+        return "dmg_taken";
+    if ( kind == WE_AWARD_KIND_WEAPON_HIT )
+        return "weapon_hit";
+    if ( kind == WE_AWARD_KIND_WEAPON_KILL )
+        return "weapon_kill";
+    if ( kind == WE_AWARD_KIND_WEAPON_DEATH )
+        return "weapon_death";
+    if ( kind == WE_AWARD_KIND_SHOTS )
+        return "shots";
+    if ( kind == WE_AWARD_KIND_HITS )
+        return "hits";
+    if ( kind == WE_AWARD_KIND_KEY_PRESS )
+        return "key_press";
+    if ( kind == WE_AWARD_KIND_SPEED_KILL )
+        return "speed_kill";
+    if ( kind == WE_AWARD_KIND_FRAGS )
+        return "frags";
+    return "?";
+}
+
+String WE_Awards_FreqName( int freq )
+{
+    if ( freq == WE_AWARD_FREQ_EVERY )
+        return "every";
+    if ( freq == WE_AWARD_FREQ_MAP )
+        return "map";
+    if ( freq == WE_AWARD_FREQ_ROUND )
+        return "round";
+    if ( freq == WE_AWARD_FREQ_ONCE )
+        return "once";
+    return "?";
+}
+
+String WE_Awards_ItemLabel( int tag )
+{
+    Item @item = @G_GetItem( tag );
+    if ( @item != null )
+    {
+        if ( item.shortName.len() > 0 )
+            return item.shortName;
+        if ( item.name.len() > 0 )
+            return item.name;
+    }
+    return "" + tag;
+}
+
+String WE_Awards_KeyName( int tag )
+{
+    if ( tag == KEYICON_FORWARD )
+        return "forward";
+    if ( tag == KEYICON_BACKWARD )
+        return "backward";
+    if ( tag == KEYICON_LEFT )
+        return "left";
+    if ( tag == KEYICON_RIGHT )
+        return "right";
+    if ( tag == KEYICON_FIRE )
+        return "fire";
+    if ( tag == KEYICON_JUMP )
+        return "jump";
+    if ( tag == KEYICON_CROUCH )
+        return "crouch";
+    if ( tag == KEYICON_SPECIAL )
+        return "special";
+    return "" + tag;
+}
+
 int WE_Awards_FilterClass( int kind )
 {
     if ( kind == WE_AWARD_KIND_DMG_DEALT || kind == WE_AWARD_KIND_DMG_TAKEN
@@ -247,6 +343,20 @@ int WE_Awards_FilterClass( int kind )
     if ( kind == WE_AWARD_KIND_KEY_PRESS )
         return WE_AWARD_FILTER_KEY;
     return WE_AWARD_FILTER_NONE;
+}
+
+String WE_Awards_P2Label( int kind, int p2 )
+{
+    int filter = WE_Awards_FilterClass( kind );
+    if ( filter == WE_AWARD_FILTER_NONE )
+        return "" + p2;
+    if ( p2 == 0 )
+        return "any";
+    if ( filter == WE_AWARD_FILTER_WEAPON || filter == WE_AWARD_FILTER_AMMO )
+        return WE_Awards_ItemLabel( p2 );
+    if ( filter == WE_AWARD_FILTER_KEY )
+        return WE_Awards_KeyName( p2 );
+    return "" + p2;
 }
 
 bool WE_Awards_FilterRequired( int kind )
@@ -295,6 +405,14 @@ String WE_Awards_TitleForId( const String &in id )
     if ( idx < 0 )
         return id;
     return weAwardTitle[idx];
+}
+
+String WE_Awards_DescForId( const String &in id )
+{
+    int idx = WE_Awards_FindIndex( id );
+    if ( idx < 0 )
+        return "";
+    return weAwardDesc[idx];
 }
 
 String WE_Awards_Key( const String &in id )

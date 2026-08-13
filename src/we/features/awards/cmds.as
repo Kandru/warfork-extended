@@ -1,3 +1,29 @@
+void WE_Awards_AddCatalogTable( WE_Reply @reply )
+{
+    if ( @reply == null )
+        return;
+
+    reply.AddTitle( WE_MSG_TITLE_AWARDS_AVAILABLE );
+    if ( weAwardCount <= 0 )
+    {
+        reply.AddLine( WE_MSG_AWARDS_CATALOG_NONE );
+        reply.AddLine( "" );
+        return;
+    }
+
+    reply.TableHeader6( "#Id", "Title", "Kind", "Freq", "P1", "P2" );
+    for ( int i = 0; i < weAwardCount; i++ )
+    {
+        reply.TableAddRow();
+        reply.TableSet( 0, weAwardId[i] );
+        reply.TableSet( 1, weAwardTitle[i] );
+        reply.TableSet( 2, WE_Awards_KindName( weAwardKind[i] ) );
+        reply.TableSet( 3, WE_Awards_FreqName( weAwardFreq[i] ) );
+        reply.TableSet( 4, "" + weAwardP1[i] );
+        reply.TableSet( 5, WE_Awards_P2Label( weAwardKind[i], weAwardP2[i] ) );
+    }
+}
+
 bool WE_Cmd_Awards( Client @client, const String &argsString, int argc )
 {
     if ( we_feature_awards.integer != 1 )
@@ -6,51 +32,57 @@ bool WE_Cmd_Awards( Client @client, const String &argsString, int argc )
         return true;
     }
 
+    WE_Reply reply;
+    WE_Awards_AddCatalogTable( reply );
+
     String steamid = WE_SteamId( client );
     if ( steamid.len() == 0 )
     {
-        WE_Print( client, WE_MSG_AWARDS_NO_STEAM );
+        reply.AddTitle( WE_MSG_TITLE_AWARDS );
+        reply.AddLine( WE_MSG_AWARDS_NO_STEAM );
+        reply.Send( client );
         return true;
     }
 
     String data;
-    if ( !WE_UserLoad( steamid, data ) )
-    {
-        WE_Print( client, WE_MSG_AWARDS_NONE );
-        return true;
-    }
-
     const uint prefixLen = WE_AWARD_KEY_PREFIX.len();
     String[] titles( WE_MAX_AWARDS );
+    String[] descs( WE_MAX_AWARDS );
     int[] counts( WE_MAX_AWARDS );
     int found = 0;
 
-    String line;
-    uint pos = 0;
-    while ( WE_NextLine( data, pos, line, pos ) )
+    if ( WE_UserLoad( steamid, data ) )
     {
-        if ( line.len() == 0 )
-            continue;
-        String key;
-        String value;
-        if ( !WE_SplitKeyValue( line, key, value ) )
-            continue;
-        if ( key.len() < prefixLen || key.substr( 0, prefixLen ) != WE_AWARD_KEY_PREFIX )
-            continue;
-        if ( value.len() == 0 || !value.isNumerical() || value.toInt() <= 0 )
-            continue;
-        if ( found >= WE_MAX_AWARDS )
-            break;
+        String line;
+        uint pos = 0;
+        while ( WE_NextLine( data, pos, line, pos ) )
+        {
+            if ( line.len() == 0 )
+                continue;
+            String key;
+            String value;
+            if ( !WE_SplitKeyValue( line, key, value ) )
+                continue;
+            if ( key.len() < prefixLen || key.substr( 0, prefixLen ) != WE_AWARD_KEY_PREFIX )
+                continue;
+            if ( value.len() == 0 || !value.isNumerical() || value.toInt() <= 0 )
+                continue;
+            if ( found >= WE_MAX_AWARDS )
+                break;
 
-        String id = key.substr( prefixLen, key.len() - prefixLen );
-        titles[found] = WE_Awards_TitleForId( id );
-        counts[found] = value.toInt();
-        found++;
+            String id = key.substr( prefixLen, key.len() - prefixLen );
+            titles[found] = WE_Awards_TitleForId( id );
+            descs[found] = WE_Awards_DescForId( id );
+            counts[found] = value.toInt();
+            found++;
+        }
     }
 
     if ( found == 0 )
     {
-        WE_Print( client, WE_MSG_AWARDS_NONE );
+        reply.AddTitle( WE_MSG_TITLE_AWARDS );
+        reply.AddLine( WE_MSG_AWARDS_NONE );
+        reply.Send( client );
         return true;
     }
 
@@ -67,16 +99,19 @@ bool WE_Cmd_Awards( Client @client, const String &argsString, int argc )
             String tmpTitle = titles[j];
             titles[j] = titles[j + 1];
             titles[j + 1] = tmpTitle;
+            String tmpDesc = descs[j];
+            descs[j] = descs[j + 1];
+            descs[j + 1] = tmpDesc;
         }
     }
 
-    WE_Reply reply;
     WE_Reply_AddAwardsTable( reply );
     for ( int i = 0; i < found; i++ )
     {
         reply.TableAddRow();
         reply.TableSet( 0, "" + counts[i] );
         reply.TableSet( 1, titles[i] );
+        reply.TableSet( 2, descs[i] );
     }
     reply.Send( client );
     return true;
@@ -167,7 +202,7 @@ bool WE_Cmd_AwardRemove( Client @client, const String &argsString, int argc )
 
 void WE_Awards_RegisterCmds()
 {
-    WE_Cmds_Add( "we_awards", "", "List your earned awards", @WE_Cmd_Awards );
+    WE_Cmds_Add( "we_awards", "", "List available awards and your counts", @WE_Cmd_Awards );
     WE_Cmds_Add( "we_awardGive", "<userid> <award_id>", "Grant a catalog award", @WE_Cmd_AwardGive );
     WE_Cmds_Add( "we_awardRemove", "<userid> <award_id>", "Remove one award count", @WE_Cmd_AwardRemove );
 }
