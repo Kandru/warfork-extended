@@ -64,7 +64,7 @@ Each human player gets a file:
 
 `basewf/warfork-extended/users/<steamid>.txt`
 
-Lines are `key=value`. WE owns framework keys (userinfo snapshot, `last_connected` / `last_connected_unix`, `last_disconnected` / `last_disconnected_unix`, …).
+Lines are `key=value`. WE owns framework keys (userinfo snapshot, `last_connected` / `last_connected_unix`, `last_disconnected` / `last_disconnected_unix`, `award_<id>` award counters, …).
 
 ### Custom gamemode API
 
@@ -191,10 +191,11 @@ For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (sa
 ```
 basewf/warfork-extended/
   banlist.txt
+  awards.txt               # award catalog (load once per gametype init)
   locks.txt
   recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
   users/
-    <steamid>.txt    # WE keys + cust_* keys
+    <steamid>.txt    # WE keys (incl. award_*) + cust_* keys
 ```
 
 `recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown.

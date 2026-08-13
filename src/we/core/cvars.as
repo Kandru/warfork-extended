@@ -6,3 +6,4 @@ Cvar we_feature_ban( "we_feature_ban", "1", 0 );
 Cvar we_feature_weapon( "we_feature_weapon", "1", 0 );
 Cvar we_feature_respawn( "we_feature_respawn", "1", 0 );
 Cvar we_feature_changeteam( "we_feature_changeteam", "1", 0 );
+Cvar we_feature_awards( "we_feature_awards", "1", 0 );

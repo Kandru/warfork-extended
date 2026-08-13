@@ -72,6 +72,8 @@ WE_MODULES = (
     "features/weapon/cmds.as",
     "features/respawn/cmds.as",
     "features/changeteam/cmds.as",
+    "features/awards/awards.as",
+    "features/awards/cmds.as",
     "core/core_cmds.as",
     "core/main.as",
 )

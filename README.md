@@ -8,6 +8,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
+- Custom awards (`award_*` counters, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
 ## Features (out of the box)
@@ -24,6 +25,9 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | `we_weaponStrip <userid>` | operator | Remove all weapons and ammo |
 | `we_respawn <userid>` | operator | Force-respawn a player (list if no arg) |
 | `we_changeteam <userid> <team>` | operator | Move player to a team (id or name fragment) |
+| `we_awards` | everyone | List your earned awards |
+| `we_awardGive <userid> <award_id>` | operator | Grant a catalog award |
+| `we_awardRemove <userid> <award_id>` | operator | Remove one count of a catalog award |
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
@@ -75,7 +79,10 @@ set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"
 set we_feature_changeteam "1"
+set we_feature_awards "1"
 ```
+
+Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
 
 ## Extending (features)
 

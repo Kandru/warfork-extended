@@ -10,6 +10,8 @@ void WE_Init()
     WE_Weapon_Register();
     WE_Respawn_Register();
     WE_ChangeTeam_Register();
+    WE_Awards_Register();
+    WE_Awards_RegisterCmds();
 }
 
 void WE_Init_After()
@@ -17,5 +19,6 @@ void WE_Init_After()
     WE_Cmds_RegisterEngine();
     WE_Users_Init();
     WE_Ban_Init();
+    WE_Awards_Init();
     G_Print( WE_MSG_INIT_PREFIX + WE_VERSION + WE_MSG_INIT_SUFFIX );
 }
