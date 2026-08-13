@@ -5,20 +5,20 @@
 #   round = once per match playtime (not CA/bomb intra-match rounds)
 # Duration params are seconds. ping_high: p1=ping threshold, p2=seconds (0 = spike).
 # p2 filters: weapon / ammo / key name or tag (0 = any where allowed). See awards.md.
-lag_lord|1|ping_high|every|100|60|Lag Lord|Held ping over 100 for 60 seconds
+lag_lord|1|ping_high|map|100|60|Lag Lord|Held ping over 100 for 60 seconds
 dialup_diplomat|1|ping_high|round|250|0|Dial-up Diplomat|Ping spiked past 250
 punching_bag|1|victim_streak|map|5|0|Punching Bag|Same player killed you 5 times in a row
-the_student|1|revenge|map|3|0|The Student|Killed the player who got 3 consecutive kills on you
-couch_potato|1|spec_time|map|180|0|Couch Potato|Spectated for 3 minutes
+the_student|1|revenge|round|3|0|The Student|Killed the player who got 3 consecutive kills on you
+couch_potato|1|spec_time|map|300|0|Couch Potato|Spectated for 5 minutes
 own_goal|1|suicide|round|1|0|Own Goal Enthusiast|You did that to yourself
 spawn_tourist|1|fast_death|round|5|0|Spawn Tourist|Died within 5 seconds of spawning
 glass_cannon|1|kill_then_die|every|3|0|Glass Cannon|Got a kill then died within 3 seconds
-living_statue|1|stillness|map|30|0|Living Statue|Stood still while alive for 30 seconds
+living_statue|1|stillness|map|60|0|Living Statue|Stood still while alive for 60 seconds
 on_a_roll|1|kill_streak|round|5|0|On a Roll|5 kills without dying
 first_blood|1|first_blood|round|0|0|First Blood|First kill of the match
-survivor|1|alive_time|once|120|0|Survivor|Stayed alive for 2 minutes after spawning
+survivor|1|alive_time|once|300|0|Survivor|Stayed alive for 5 minutes after spawning
 participation|1|manual|every|0|0|Participation Trophy|Granted by an operator
 rocket_man|1|weapon_kill|round|3|rocketlauncher|Rocket Man|3 kills with the rocket launcher
-bunny|1|key_press|round|1000|jump|Bunny|Pressed jump 1000 times
+bunny|1|key_press|map|1000|jump|Bunny|Pressed jump 1000 times
 bullet_sponge|1|dmg_taken|map|500|0|Bullet Sponge|Took 500 damage
 spray|1|shots|round|100|bullets|Spray and Pray|Fired 100 machinegun bullets
