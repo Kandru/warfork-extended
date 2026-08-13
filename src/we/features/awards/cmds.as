@@ -21,7 +21,7 @@ bool WE_Cmd_Awards( Client @client, const String &argsString, int argc )
     }
 
     const uint prefixLen = WE_AWARD_KEY_PREFIX.len();
-    bool any = false;
+    bool found = false;
     String line;
     uint pos = 0;
     while ( WE_NextLine( data, pos, line, pos ) )
@@ -39,15 +39,15 @@ bool WE_Cmd_Awards( Client @client, const String &argsString, int argc )
 
         String id = key.substr( prefixLen, key.len() - prefixLen );
         String title = WE_Awards_TitleForId( id );
-        if ( !any )
+        if ( !found )
         {
             client.printMessage( WE_MSG_AWARDS_HEADER );
-            any = true;
+            found = true;
         }
         client.printMessage( "  " + title + ": " + value + "\n" );
     }
 
-    if ( !any )
+    if ( !found )
         client.printMessage( WE_MSG_AWARDS_NONE );
     return true;
 }

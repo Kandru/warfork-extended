@@ -6,6 +6,7 @@ alwaysApply: false
 # AS (Warfork)
 
 - `out` reserved. NEVER local/var name `out`. Use `result`/`content`. Param dir `Type &out x` OK.
+- `any` reserved (built-in type). NEVER local/var name `any`. Use `found`/`hasOne`/etc.
 - Prefer `const String &in`; handles `@`; null via `@x == null`.
 - No `findFirst` assumed; scan w/ `substr`. `getToken` = whitespace (space/tab); CSV/TSV w/ spaces → manual split, not `getToken`.
 - Engine hooks = `GT_*` by name; keep empty stubs if present. Helpers like `GT_updateScore` are NOT engine hooks.
