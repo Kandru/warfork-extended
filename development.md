@@ -87,6 +87,45 @@ String visits = WE_GetPlayerDataBySteamId( steamid, "visits" );
 - Do not call internal `WE_UserSet` with bare keys from a custom GT — use `WE_GetPlayerData` / `WE_SetPlayerData`.
 - Bots have no steamid; skip them.
 
+## In-game choice menus (`WE_Menu`)
+
+Stock Warfork clients can show a **modal choice list** (`mecu`) and a **bind-key QuickMenu**. `WE_Menu` builds both from the same label/command pairs. It is **not** HTML / pseudo-HTML overlays (those need a client/engine fork; vanilla clients only get this list UI).
+
+| Method | Purpose |
+|--------|---------|
+| `WE_Menu()` / `WE_Menu( title )` | Construct empty or titled menu |
+| `SetTitle( title )` / `Clear()` | Change title / reset title + items |
+| `Add( label, command )` | Append a button (skips empty label or command) |
+| `Show( client )` | `execGameCommand( mecu … )` popup |
+| `SetQuickMenu( client )` | `setQuickMenuItems( … )` for the quick-menu bind |
+| `ToMecuCommand()` / `ToQuickMenuItems()` | Raw strings if you need them |
+
+Every token is double-quoted; embedded `"` characters are stripped so the client parser does not split items.
+
+Button `command` strings are opaque client commands. Register them yourself (`G_RegisterCommand` in a custom GT, or `WE_Cmds_Add` for WE features). The util does not register commands.
+
+### Example — modal picker in a custom GT
+
+```angelscript
+void MyGT_ShowConfirm( Client @client )
+{
+    if ( @client == null )
+        return;
+
+    WE_Menu menu( "Confirm" );
+    menu.Add( "Yes", "myconfirm yes" );
+    menu.Add( "No", "myconfirm no" );
+    menu.Show( client );
+}
+
+// In GT_InitGametype:
+//   G_RegisterCommand( "myconfirm" );
+
+// In GT_Command, handle cmdString == "myconfirm" and argsString.
+```
+
+For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (same `Add` pairs).
+
 ## Related WE helpers (optional)
 
 | Function | Notes |
@@ -95,6 +134,7 @@ String visits = WE_GetPlayerDataBySteamId( steamid, "visits" );
 | `WE_StripColors( text )` | Name without color codes |
 | `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |
 | `WE_ClientFromArg( actor, argsString, usage, includeSpectators )` | Same, first token; prints usage / player list / matches |
+| `WE_Menu` | Build mecu / QuickMenu choice lists (`src/we/utils/menu.as`) |
 | `WE_Hooks_Add*` / `WE_Cmds_Add` | For framework features under `src/we/` |
 
 ## Files on disk (operators)
