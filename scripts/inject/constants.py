@@ -63,6 +63,7 @@ WE_MODULES = (
     "utils/menu.as",
     "player/userinfo.as",
     "player/users.as",
+    "player/player_data.as",
     "player/register.as",
     "features/ban/store.as",
     "features/ban/cmds.as",

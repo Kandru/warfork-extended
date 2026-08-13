@@ -62,6 +62,8 @@ WE_Cmds_Add( "we_foo", @My_Cmd );
 
 Call your `*_Register()` from `WE_Init()` in `src/we/core/main.as`. Hook API uses AngelScript `funcdef` handles (`core/hook_types.as`).
 
+Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerData` (keys stored as `cust_*`) — see [development.md](development.md).
+
 1. Create the same layout as stock:
    `gamemodes/custom/progs/gametypes/<name>.gt`  
    `gamemodes/custom/progs/gametypes/<name>.as` (and extras)

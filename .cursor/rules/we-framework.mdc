@@ -10,6 +10,6 @@ alwaysApply: true
 - Repo path contains `warfork-extended`; never test `"warfork-extended" in path.parts` — use `relative_to(progs/gametypes/warfork-extended)`.
 - Runtime data: `basewf/warfork-extended/*.txt` (`banlist.txt`, `users/<steamid>.txt`, `locks.txt`). Soft locks only on writes (`WE_WriteFileLocked`); reads never lock. Format `name=unix@ip:port`, 1s TTL.
 - Cvars: `we_enabled`, `we_debug`, `we_feature_<name>` — example only in `configs/warfork-extended.cfg.example`; paste into `server.cfg` (no auto-write).
-- Features: register with `WE_Hooks_Add*` / `WE_Cmds_Add` (funcdef registries in `core/hook_types.as`). Cmds default prefix `we_`. Identity = steam_id.
+- Features: register with `WE_Hooks_Add*` / `WE_Cmds_Add` (funcdef registries in `core/hook_types.as`). Cmds default prefix `we_`. Identity = steam_id. Custom GTs: `WE_GetPlayerData`/`WE_SetPlayerData` → keys forced to `cust_*` (see `development.md`).
 - Build: `make`/`make dev`/`make prod`. Version: `VERSION` → GH release workflow.
 - Ref quarry (not shipped): `idea/progs/gametypes/agungame/`.
