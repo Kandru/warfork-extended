@@ -70,6 +70,8 @@ WE_MODULES = (
     "features/ban/cmds.as",
     "features/ban/enforce.as",
     "features/weapon/cmds.as",
+    "features/respawn/cmds.as",
+    "features/changeteam/cmds.as",
     "core/core_cmds.as",
     "core/main.as",
 )

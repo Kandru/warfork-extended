@@ -8,6 +8,8 @@ void WE_Init()
     WE_Users_Register();
     WE_Ban_Register();
     WE_Weapon_Register();
+    WE_Respawn_Register();
+    WE_ChangeTeam_Register();
 }
 
 void WE_Init_After()

@@ -6,13 +6,18 @@ const String WE_MSG_DISABLED = S_COLOR_YELLOW + "warfork-extended is disabled (w
 const String WE_MSG_USERS_DISABLED = S_COLOR_YELLOW + "Users feature disabled (we_feature_users 0).\n";
 const String WE_MSG_BAN_DISABLED = S_COLOR_YELLOW + "Ban feature disabled (we_feature_ban 0).\n";
 const String WE_MSG_WEAPON_DISABLED = S_COLOR_YELLOW + "Weapon feature disabled (we_feature_weapon 0).\n";
+const String WE_MSG_RESPAWN_DISABLED = S_COLOR_YELLOW + "Respawn feature disabled (we_feature_respawn 0).\n";
+const String WE_MSG_CHANGETEAM_DISABLED = S_COLOR_YELLOW + "Changeteam feature disabled (we_feature_changeteam 0).\n";
 
 const String WE_MSG_PLAYERS_HEADER = "\nPlayers:\n";
 const String WE_MSG_ITEMS_HEADER = "\nItems:\n";
+const String WE_MSG_TEAMS_HEADER = "\nTeams:\n";
 const String WE_MSG_NO_REASON = "no reason given";
 const String WE_MSG_PLAYER_AMBIGUOUS = S_COLOR_RED + "Ambiguous player (matches more than one). Be more specific.\n";
 const String WE_MSG_ITEM_AMBIGUOUS = S_COLOR_RED + "Ambiguous item (matches more than one). Be more specific.\n";
 const String WE_MSG_ITEM_NOT_FOUND = S_COLOR_RED + "Unknown item.\n";
+const String WE_MSG_TEAM_AMBIGUOUS = S_COLOR_RED + "Ambiguous team (matches more than one). Be more specific.\n";
+const String WE_MSG_TEAM_NOT_FOUND = S_COLOR_RED + "Unknown team.\n";
 
 const String WE_MSG_KICK_USAGE = "usage: we_kick <userid> [reason]\n";
 const String WE_MSG_KICK_DONE = S_COLOR_GREEN + "Kicked.\n";
@@ -36,6 +41,16 @@ const String WE_MSG_WEAPON_GIVE_DONE = S_COLOR_GREEN + "Gave item.\n";
 const String WE_MSG_WEAPON_REMOVE_DONE = S_COLOR_GREEN + "Removed item.\n";
 const String WE_MSG_WEAPON_STRIP_DONE = S_COLOR_GREEN + "Stripped weapons.\n";
 
+const String WE_MSG_RESPAWN_USAGE = "usage: we_respawn <userid>\n";
+const String WE_MSG_RESPAWN_DONE = S_COLOR_GREEN + "Respawned.\n";
+const String WE_MSG_RESPAWN_NOTIFY = S_COLOR_YELLOW + "You were respawned by an operator.\n";
+const String WE_MSG_RESPAWN_SPECTATOR = S_COLOR_RED + "Cannot respawn a spectator.\n";
+
+const String WE_MSG_CHANGETEAM_USAGE = "usage: we_changeteam <userid> <team>\n";
+const String WE_MSG_CHANGETEAM_DONE = S_COLOR_GREEN + "Team changed.\n";
+const String WE_MSG_CHANGETEAM_NOTIFY = S_COLOR_YELLOW + "Your team was changed by an operator.\n";
+const String WE_MSG_CHANGETEAM_SAME = S_COLOR_YELLOW + "Player is already on that team.\n";
+
 const String WE_MSG_HELP =
     S_COLOR_CYAN + "warfork-extended commands:\n"
     + "  we_help\n"
@@ -45,7 +60,9 @@ const String WE_MSG_HELP =
     + "  we_unban [index]\n"
     + "  we_weaponGive <userid> <weaponid>\n"
     + "  we_weaponRemove <userid> <weaponid>\n"
-    + "  we_weaponStrip <userid>\n";
+    + "  we_weaponStrip <userid>\n"
+    + "  we_respawn <userid>\n"
+    + "  we_changeteam <userid> <team>\n";
 
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";

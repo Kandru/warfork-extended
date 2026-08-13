@@ -7,7 +7,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Injects hooks around engine `GT_*` callbacks
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
-- Operator tools: kick, ban/unban, give/remove/strip weapons
+- Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
 - Per-player key/value files with userinfo snapshot + `last_connected`
 
 ## Features (out of the box)
@@ -22,10 +22,13 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | `we_weaponGive <userid> <weaponid>` | operator | Give an item (id or unique name fragment) |
 | `we_weaponRemove <userid> <weaponid>` | operator | Remove an item (id or unique name fragment) |
 | `we_weaponStrip <userid>` | operator | Remove all weapons and ammo |
+| `we_respawn <userid>` | operator | Force-respawn a player (list if no arg) |
+| `we_changeteam <userid> <team>` | operator | Move player to a team (id or name fragment) |
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
 - `weaponid` is an item tag, or a unique fragment of the item name / short name
+- `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
 
 ## Requirements
 
@@ -57,6 +60,8 @@ set we_debug "0"
 set we_feature_users "1"
 set we_feature_ban "1"
 set we_feature_weapon "1"
+set we_feature_respawn "1"
+set we_feature_changeteam "1"
 ```
 
 ## Extending (features)
