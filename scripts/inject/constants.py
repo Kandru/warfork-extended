@@ -78,6 +78,7 @@ WE_MODULES = (
     "features/awards/cmds.as",
     "features/report/store.as",
     "features/report/cmds.as",
+    "features/welcome/welcome.as",
     "core/core_cmds.as",
     "core/main.as",
 )

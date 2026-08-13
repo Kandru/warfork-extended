@@ -10,3 +10,4 @@ Cvar we_feature_awards( "we_feature_awards", "1", 0 );
 Cvar we_awards_center_message( "we_awards_center_message", "1", 0 );
 Cvar we_awards_chat_message( "we_awards_chat_message", "1", 0 );
 Cvar we_feature_report( "we_feature_report", "1", 0 );
+Cvar we_feature_welcome( "we_feature_welcome", "1", 0 );

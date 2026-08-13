@@ -16,6 +16,7 @@ void WE_Init()
     WE_Awards_Register();
     WE_Awards_RegisterCmds();
     WE_Report_Register();
+    WE_Welcome_Register();
 }
 
 void WE_Init_After()

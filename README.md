@@ -9,6 +9,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - SteamID-based player identity
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
 - Player reports (`we_report` / `report` → `report.txt`)
+- Join tip in chat pointing players at `we_help` (`we_feature_welcome`)
 - Custom awards (`award_*` counters with every/map/round/once frequency, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
@@ -89,7 +90,10 @@ set we_feature_awards "1"
 set we_awards_center_message "1"
 set we_awards_chat_message "1"
 set we_feature_report "1"
+set we_feature_welcome "1"
 ```
+
+On join (`enterGame`), players with a steam_id get a private themed chat tip: `[WE] Hey <name>, type we_help into the console` (`we_feature_welcome`, default `1`).
 
 Award definitions live in `basewf/warfork-extended/awards.txt` (seeded from defaults on first run; see [`configs/awards.txt.example`](configs/awards.txt.example)). Loaded once per map / gametype init. Counts are stored on the user file as `award_<id>`.
 

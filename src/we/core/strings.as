@@ -82,5 +82,10 @@ const String WE_MSG_REPORT_CHAT_PREFIX = S_COLOR_YELLOW + "[WE] ";
 const String WE_MSG_REPORT_CHAT_REPORTED = S_COLOR_WHITE + " reported ";
 const String WE_MSG_REPORT_CHAT_FOR = S_COLOR_WHITE + " for " + S_COLOR_CYAN;
 
+const String WE_MSG_WELCOME_HEY = "Hey ";
+const String WE_MSG_WELCOME_TYPE = ", type ";
+const String WE_MSG_WELCOME_CMD = "we_help";
+const String WE_MSG_WELCOME_SUFFIX = " into the console\n";
+
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";
