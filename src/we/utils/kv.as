@@ -4,7 +4,7 @@ bool WE_KvHasKey( const String &in data, const String &in key )
 {
     String line;
     uint pos = 0;
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
@@ -22,7 +22,7 @@ String WE_KvGet( const String &in data, const String &in key )
 {
     String line;
     uint pos = 0;
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
@@ -43,7 +43,7 @@ String WE_KvSet( const String &in data, const String &in key, const String &in v
     String line;
     uint pos = 0;
 
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
@@ -73,7 +73,7 @@ String WE_KvMergeBlob( const String &in data, const String &in blob )
     String line;
     uint pos = 0;
 
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
@@ -86,7 +86,7 @@ String WE_KvMergeBlob( const String &in data, const String &in blob )
     }
 
     pos = 0;
-    while ( WE_NextLine( blob, pos, line ) )
+    while ( WE_NextLine( blob, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;

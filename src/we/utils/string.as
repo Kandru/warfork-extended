@@ -102,9 +102,10 @@ bool WE_ContainsIgnoreCase( const String &in haystack, const String &in needle )
 }
 
 // Advance pos through data; write next line (without newline). True until past EOF.
-bool WE_NextLine( const String &in data, uint &inout pos, String &out line )
+bool WE_NextLine( const String &in data, uint pos, String &out line, uint &out nextPos )
 {
     line = "";
+    nextPos = pos;
     if ( pos > data.len() )
         return false;
 
@@ -113,11 +114,14 @@ bool WE_NextLine( const String &in data, uint &inout pos, String &out line )
         String ch = data.substr( pos, 1 );
         pos++;
         if ( ch == "\n" || ch == "\r" )
+        {
+            nextPos = pos;
             return true;
+        }
         line += ch;
     }
 
-    pos = data.len() + 1;
+    nextPos = data.len() + 1;
     return true;
 }
 

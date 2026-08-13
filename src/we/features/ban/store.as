@@ -96,7 +96,7 @@ void WE_Ban_Reload()
 
     String line;
     uint pos = 0;
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() > 0 )
             WE_Ban_ParseLine( line );

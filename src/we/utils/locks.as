@@ -56,7 +56,7 @@ String WE_Locks_Rebuild( const String &in data, const String &in dropName, bool 
     String line;
     uint pos = 0;
 
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
@@ -88,7 +88,7 @@ bool WE_Locks_Find( const String &in data, const String &in name, uint &out lock
     String line;
     uint pos = 0;
 
-    while ( WE_NextLine( data, pos, line ) )
+    while ( WE_NextLine( data, pos, line, pos ) )
     {
         if ( line.len() == 0 )
             continue;
