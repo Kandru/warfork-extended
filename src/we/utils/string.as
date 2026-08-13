@@ -7,7 +7,7 @@ void WE_Print( Client @client, const String &in msg )
 {
     if ( @client == null )
         return;
-    client.printMessage( WE_MSG_PREFIX + msg );
+    client.printMessage( WE_Theme_Prefix() + msg );
 }
 
 String WE_StripColors( const String &in text )

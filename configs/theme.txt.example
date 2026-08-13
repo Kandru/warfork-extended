@@ -1,0 +1,12 @@
+# warfork-extended console theme (color names, not ^ codes)
+# Runtime path: basewf/warfork-extended/theme.txt
+# Written with defaults on first run if missing.
+# Names: black red green yellow blue cyan purple/magenta white orange gray/grey
+accent=orange
+header=orange
+sep=grey
+marker=grey
+body=white
+success=green
+error=red
+warn=yellow

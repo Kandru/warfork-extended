@@ -6,7 +6,7 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
         return true;
     }
 
-    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_REPORT_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_REPORT_USAGE, true, true );
     if ( @target == null )
         return true;
     if ( !WE_RequireNotSelf( client, target ) )
@@ -28,9 +28,11 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
         return true;
     }
 
-    WE_Print( client, WE_MSG_REPORT_FILED_PREFIX + target.name + WE_MSG_REPORT_FILED_SUFFIX );
-    WE_Print( client, WE_MSG_REPORT_REASON_PREFIX + reason + "\n" );
-    WE_Print( client, WE_MSG_REPORT_REVIEW );
+    WE_Reply reply;
+    reply.AddLine( WE_MSG_REPORT_FILED_PREFIX + target.name + WE_MSG_REPORT_FILED_SUFFIX );
+    reply.AddLine( WE_MSG_REPORT_REASON_PREFIX + reason );
+    reply.AddLine( WE_MSG_REPORT_REVIEW );
+    reply.Send( client );
 
     G_PrintMsg( null,
         WE_MSG_REPORT_CHAT_PREFIX
@@ -78,6 +80,6 @@ void WE_Report_OnScoreEvent( Client @client, const String &score_event, const St
 void WE_Report_Register()
 {
     WE_Hooks_AddScoreEventAfter( @WE_Report_OnScoreEvent );
-    WE_Cmds_Add( "we_report", @WE_Cmd_Report );
-    WE_Cmds_Add( "report", @WE_Cmd_Report );
+    WE_Cmds_Add( "we_report", "<userid> [reason]", "File a player report", @WE_Cmd_Report );
+    WE_Cmds_Add( "report", "<userid> [reason]", "File a player report", @WE_Cmd_Report );
 }

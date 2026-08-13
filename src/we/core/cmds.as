@@ -1,10 +1,13 @@
 // Command registry — features WE_Cmds_Add(); wrappers dispatch via WE_Cmds_Dispatch.
 
 String[] weCmdNames( WE_MAX_CMDS );
+String[] weCmdParams( WE_MAX_CMDS );
+String[] weCmdDescs( WE_MAX_CMDS );
 WE_CmdHandlerFn@[] weCmdHandlers( WE_MAX_CMDS );
 int weCmdCount = 0;
 
-void WE_Cmds_Add( const String &in name, WE_CmdHandlerFn @handler )
+void WE_Cmds_Add( const String &in name, const String &in params, const String &in description,
+    WE_CmdHandlerFn @handler )
 {
     if ( name.len() == 0 )
         return;
@@ -14,6 +17,8 @@ void WE_Cmds_Add( const String &in name, WE_CmdHandlerFn @handler )
         return;
 
     weCmdNames[weCmdCount] = name;
+    weCmdParams[weCmdCount] = params;
+    weCmdDescs[weCmdCount] = description;
     @weCmdHandlers[weCmdCount] = handler;
     weCmdCount++;
 }

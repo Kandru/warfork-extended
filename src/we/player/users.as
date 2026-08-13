@@ -325,21 +325,6 @@ bool WE_RecentDisconnects_SteamMatches( const String &in steamid, const String &
     return WE_ContainsIgnoreCase( steamid, query );
 }
 
-Client @WE_FindClientBySteamId( const String &in steamid )
-{
-    if ( steamid.len() == 0 )
-        return null;
-    for ( int i = 0; i < maxClients; i++ )
-    {
-        Client @other = @G_GetClient( i );
-        if ( !WE_ClientListed( other, true ) )
-            continue;
-        if ( WE_SteamId( other ) == steamid )
-            return other;
-    }
-    return null;
-}
-
 bool WE_ClientIsOnlineBySteamId( const String &in steamid )
 {
     return @WE_FindClientBySteamId( steamid ) != null;
@@ -381,26 +366,15 @@ int WE_RecentDisconnects_LoadListed()
     return weRecentCount;
 }
 
-void WE_RecentDisconnects_PrintLineFromData( Client @to, const String &in steamid, const String &in data )
+// After LoadListed: steamid for display id 900+i, or "" if out of range.
+String WE_RecentDisconnects_SteamIdByListId( int listId )
 {
-    if ( @to == null || steamid.len() == 0 )
-        return;
-
-    String name = WE_KvGet( data, "name" );
-    if ( name.len() == 0 )
-        name = "(unknown)";
-    String when = WE_UserLeaveHumanFromData( data );
-    if ( when.len() == 0 )
-        when = "?";
-
-    WE_Print( to, name + " [" + steamid + "] " + when + "\n" );
-}
-
-void WE_RecentDisconnects_PrintLine( Client @to, const String &in steamid )
-{
-    String data;
-    WE_UserLoad( steamid, data );
-    WE_RecentDisconnects_PrintLineFromData( to, steamid, data );
+    if ( listId < WE_RECENT_ID_BASE )
+        return "";
+    int index = listId - WE_RECENT_ID_BASE;
+    if ( index < 0 || index >= weRecentCount )
+        return "";
+    return weRecentIds[index];
 }
 
 String WE_RecentDisconnects_FindBy( const String &in query, bool byName )
@@ -502,44 +476,6 @@ bool WE_RecentDisconnects_QueryAmbiguousBy( const String &in query, bool byName 
             exactCount++;
     }
     return WE_UniqueMatchKind( matchCount, exactCount ) == WE_MATCH_AMBIGUOUS;
-}
-
-void WE_RecentDisconnects_PrintMatchesBy( Client @to, const String &in query, bool byName )
-{
-    if ( @to == null )
-        return;
-
-    WE_RecentDisconnects_LoadListed();
-    for ( int i = 0; i < weRecentCount; i++ )
-    {
-        String steamid = weRecentIds[i];
-        String data;
-        WE_UserLoad( steamid, data );
-
-        bool matches = byName
-            ? WE_RecentDisconnects_NameMatchesData( data, query )
-            : WE_RecentDisconnects_SteamMatches( steamid, query );
-        if ( !matches )
-            continue;
-        WE_RecentDisconnects_PrintLineFromData( to, steamid, data );
-    }
-}
-
-void WE_RecentDisconnects_Print( Client @client )
-{
-    if ( @client == null )
-        return;
-
-    WE_Print( client, WE_MSG_RECENT_DISCONNECTS_HEADER );
-
-    if ( WE_RecentDisconnects_LoadListed() <= 0 )
-    {
-        WE_Print( client, WE_MSG_RECENT_DISCONNECTS_NONE );
-        return;
-    }
-
-    for ( int i = 0; i < weRecentCount; i++ )
-        WE_RecentDisconnects_PrintLine( client, weRecentIds[i] );
 }
 
 void WE_RecentDisconnects_MergeConnected()

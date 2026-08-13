@@ -175,6 +175,36 @@ void MyGT_ShowConfirm( Client @client )
 
 For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (same `Add` pairs).
 
+## Console replies (`WE_Reply`)
+
+Operator/player command output should be **one** themed reply per command (prefix only on the first line).
+
+| API | Purpose |
+|-----|---------|
+| `WE_Reply` / `AddLine` / `AddItem` / `Send` | Buffer lines; `AddItem` prefixes a grey `- ` |
+| `TableHeader*` / `TableAddRow` / `TableSet` | Padded columns with grey ` \| ` separators |
+| `WE_Reply_AddPlayers( reply, includeSpectators, withTeam )` | Player table (Team column optional) |
+| `WE_Reply_AddRecentDisconnects( reply )` | Offline targets with IDs **900+** |
+| `WE_Reply_AddItems` / `WE_Reply_AddTeams` | Item / joinable-team tables |
+| `WE_ClientFromArg( …, includeSpectators, withTeam )` | Resolve first token; on failure prints usage + player table |
+| `WE_Cmds_Add( name, params, description, @handler )` | Register command for dispatch + `we_help` |
+| `WE_Theme_Color( role )` / `WE_Theme_Prefix()` | Colors from `theme.txt` (`S_COLOR_*` only) |
+
+Example:
+
+```angelscript
+bool WE_Cmd_Foo( Client @client, const String &argsString, int argc )
+{
+    WE_Reply reply;
+    reply.AddLine( "usage: we_foo <userid>" );
+    WE_Reply_AddPlayers( reply, true, true );
+    reply.Send( client );
+    return true;
+}
+```
+
+Theme file `basewf/warfork-extended/theme.txt` (see `configs/theme.txt.example`): roles `accent`, `header`, `sep`, `marker`, `body`, `success`, `error`, `warn` map to color **names** (`orange`, `grey`, …), never `^` codes. Defaults: orange labels, grey separators, white body. Seeded on first run if missing.
+
 ## Related WE helpers (optional)
 
 | Function | Notes |
@@ -182,9 +212,10 @@ For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (sa
 | `WE_SteamId( client )` | SteamID64 string, or "" |
 | `WE_StripColors( text )` | Name without color codes |
 | `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |
-| `WE_ClientFromArg( actor, argsString, usage, includeSpectators )` | Same, first token; prints usage / player list / matches |
+| `WE_ClientFromArg( actor, argsString, usage, includeSpectators, withTeam )` | First token; prints usage / player table / matches |
 | `WE_Menu` | Build mecu / QuickMenu choice lists (`src/we/utils/menu.as`) |
 | `WE_Hooks_Add*` / `WE_Cmds_Add` | For framework features under `src/we/` |
+| `WE_Reply` | Console lists/tables (`src/we/utils/console.as`) |
 
 ## Files on disk (operators)
 
@@ -192,6 +223,7 @@ For the bind-key menu instead of a popup, call `menu.SetQuickMenu( client )` (sa
 basewf/warfork-extended/
   banlist.txt
   report.txt               # player reports (append-only CSV)
+  theme.txt                # console colors (role=colorname); seeded if missing
   awards.txt               # award catalog: id|enabled|kind|freq|p1|p2|title|description
                            # (load once per gametype init; freq=every|map|round|once)
   locks.txt
@@ -202,4 +234,4 @@ basewf/warfork-extended/
 
 `report.txt` lines are CSV: `unix, reporterSteam, reporterName, reporterClan, reportedSteam, reportedName, reportedClan, score, frags, deaths, suicides, reason`. Written via locked append (`we_report` / `report`).
 
-`recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown.
+`recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown. Offline ban list IDs start at **900**.

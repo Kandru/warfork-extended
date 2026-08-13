@@ -1,45 +1,15 @@
 bool WE_ChangeTeam_IsJoinable( int teamId )
 {
-    if ( teamId == TEAM_SPECTATOR )
-        return true;
-    if ( gametype.isTeamBased )
-        return teamId == TEAM_ALPHA || teamId == TEAM_BETA;
-    return teamId == TEAM_PLAYERS;
-}
-
-void WE_ChangeTeam_PrintTeamLine( Client @to, int teamId, Team @team )
-{
-    if ( @to == null || @team == null )
-        return;
-    String line = teamId + ": ";
-    if ( team.name.len() > 0 )
-        line += team.name;
-    else
-        line += "?";
-    if ( team.defaultName.len() > 0 )
-        line += " (" + team.defaultName + ")";
-    WE_Print( to, line + "\n" );
-}
-
-void WE_ChangeTeam_PrintTeams( Client @client )
-{
-    WE_Print( client, WE_MSG_TEAMS_HEADER );
-    for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
-    {
-        if ( !WE_ChangeTeam_IsJoinable( t ) )
-            continue;
-        Team @team = @G_GetTeam( t );
-        if ( @team == null )
-            continue;
-        WE_ChangeTeam_PrintTeamLine( client, t, team );
-    }
+    return WE_Console_TeamIsJoinable( teamId );
 }
 
 void WE_ChangeTeam_PrintUsage( Client @client )
 {
-    WE_Print( client, WE_MSG_CHANGETEAM_USAGE );
-    WE_PrintPlayers( client, true );
-    WE_ChangeTeam_PrintTeams( client );
+    WE_Reply reply;
+    reply.AddLine( WE_MSG_CHANGETEAM_USAGE );
+    WE_Reply_AddPlayers( reply, true, true );
+    WE_Reply_AddTeams( reply );
+    reply.Send( client );
 }
 
 bool WE_ChangeTeam_TextMatches( Team @team, const String &in query )
@@ -76,8 +46,10 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
         int id = query.toInt();
         if ( WE_ChangeTeam_IsJoinable( id ) && @G_GetTeam( id ) != null )
             return id;
-        WE_Print( client, WE_MSG_CHANGETEAM_INVALID );
-        WE_ChangeTeam_PrintTeams( client );
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_CHANGETEAM_INVALID );
+        WE_Reply_AddTeams( reply );
+        reply.Send( client );
         return -1;
     }
 
@@ -113,23 +85,17 @@ int WE_ChangeTeam_TeamFromQuery( Client @client, const String &in query )
 
     if ( kind == WE_MATCH_AMBIGUOUS )
     {
-        WE_Print( client, WE_MSG_TEAM_AMBIGUOUS );
-        for ( int t = TEAM_SPECTATOR; t < GS_MAX_TEAMS; t++ )
-        {
-            if ( !WE_ChangeTeam_IsJoinable( t ) )
-                continue;
-            Team @team = @G_GetTeam( t );
-            if ( @team == null )
-                continue;
-            if ( !WE_ChangeTeam_TextMatches( team, query ) )
-                continue;
-            WE_ChangeTeam_PrintTeamLine( client, t, team );
-        }
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_TEAM_AMBIGUOUS );
+        WE_Reply_AddTeams( reply );
+        reply.Send( client );
         return -1;
     }
 
-    WE_Print( client, WE_MSG_TEAM_NOT_FOUND );
-    WE_ChangeTeam_PrintTeams( client );
+    WE_Reply reply;
+    reply.AddLine( WE_MSG_TEAM_NOT_FOUND );
+    WE_Reply_AddTeams( reply );
+    reply.Send( client );
     return -1;
 }
 
@@ -151,10 +117,12 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
         return true;
     }
 
-    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_CHANGETEAM_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_CHANGETEAM_USAGE, true, true );
     if ( @target == null )
     {
-        WE_ChangeTeam_PrintTeams( client );
+        WE_Reply reply;
+        WE_Reply_AddTeams( reply );
+        reply.Send( client );
         return true;
     }
     if ( !WE_ClientListed( target, true ) )
@@ -191,5 +159,5 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
 
 void WE_ChangeTeam_Register()
 {
-    WE_Cmds_Add( "we_changeteam", @WE_Cmd_ChangeTeam );
+    WE_Cmds_Add( "we_changeteam", "<userid> <team>", "Move player to a team", @WE_Cmd_ChangeTeam );
 }

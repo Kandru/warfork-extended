@@ -5,6 +5,7 @@ void WE_Init()
     if ( !WE_FileExists( WE_REPORT_PATH ) )
         WE_WriteFileLocked( WE_REPORT_PATH, "report", "" );
 
+    WE_Theme_Init();
     WE_Locks_Register();
     WE_CoreCmds_Register();
     WE_Users_Register();

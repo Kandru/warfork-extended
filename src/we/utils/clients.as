@@ -1,17 +1,7 @@
 // Online-client lookup: slot number, unique case-insensitive name fragment,
 // or unique steam_id fragment (WE_FindClientBySteamIdFragment, used by we_ban).
 
-void WE_PrintPlayers( Client @client, bool includeSpectators )
-{
-    WE_Print( client, WE_MSG_PLAYERS_HEADER );
-    for ( int i = 0; i < maxClients; i++ )
-    {
-        Client @other = @G_GetClient( i );
-        if ( !WE_ClientListed( other, includeSpectators ) )
-            continue;
-        WE_PrintPlayerLineWithSteam( client, other );
-    }
-}
+const int WE_RECENT_ID_BASE = 900;
 
 bool WE_ClientListed( Client @other, bool includeSpectators )
 {
@@ -24,27 +14,6 @@ bool WE_ClientListed( Client @other, bool includeSpectators )
     if ( !includeSpectators && other.getEnt().team == TEAM_SPECTATOR )
         return false;
     return true;
-}
-
-void WE_PrintPlayerLine( Client @to, Client @other )
-{
-    if ( @to == null || @other == null )
-        return;
-    WE_Print( to, other.playerNum + ": " + other.name + "\n" );
-}
-
-void WE_PrintPlayerLineWithSteam( Client @to, Client @other )
-{
-    if ( @to == null || @other == null )
-        return;
-
-    String steamid = WE_SteamId( other );
-    String line = other.playerNum + ": " + other.name;
-    if ( steamid.len() > 0 )
-        line += " [" + steamid + "]";
-    else
-        line += " [no steam_id]";
-    WE_Print( to, line + "\n" );
 }
 
 bool WE_ClientSteamMatches( Client @other, const String &in query )
@@ -79,9 +48,13 @@ Client @WE_FindClient( const String &in query, bool includeSpectators )
 
     if ( query.isNumerical() )
     {
-        Client @byNum = @G_GetClient( query.toInt() );
-        if ( WE_ClientListed( byNum, includeSpectators ) )
-            return byNum;
+        int num = query.toInt();
+        if ( num >= 0 && num < WE_RECENT_ID_BASE )
+        {
+            Client @byNum = @G_GetClient( num );
+            if ( WE_ClientListed( byNum, includeSpectators ) )
+                return byNum;
+        }
     }
 
     int matchCount = 0;
@@ -135,19 +108,6 @@ bool WE_ClientQueryAmbiguous( const String &in query, bool includeSpectators )
     return WE_UniqueMatchKind( matchCount, exactCount ) == WE_MATCH_AMBIGUOUS;
 }
 
-void WE_PrintClientMatches( Client @to, const String &in query, bool includeSpectators )
-{
-    for ( int i = 0; i < maxClients; i++ )
-    {
-        Client @other = @G_GetClient( i );
-        if ( !WE_ClientListed( other, includeSpectators ) )
-            continue;
-        if ( !WE_ClientNameMatches( other, query ) )
-            continue;
-        WE_PrintPlayerLine( to, other );
-    }
-}
-
 // Silent resolve by unique steam_id fragment. null if missing or not unique.
 Client @WE_FindClientBySteamIdFragment( const String &in query, bool includeSpectators )
 {
@@ -194,86 +154,17 @@ bool WE_ClientSteamQueryAmbiguous( const String &in query, bool includeSpectator
     return false;
 }
 
-void WE_PrintClientSteamMatches( Client @to, const String &in query, bool includeSpectators )
+Client @WE_FindClientBySteamId( const String &in steamid )
 {
+    if ( steamid.len() == 0 )
+        return null;
     for ( int i = 0; i < maxClients; i++ )
     {
         Client @other = @G_GetClient( i );
-        if ( !WE_ClientListed( other, includeSpectators ) )
+        if ( !WE_ClientListed( other, true ) )
             continue;
-        if ( !WE_ClientSteamMatches( other, query ) )
-            continue;
-        WE_PrintPlayerLineWithSteam( to, other );
+        if ( WE_SteamId( other ) == steamid )
+            return other;
     }
-}
-
-// Resolve query; print usage + player list, or the ambiguous matches.
-Client @WE_ClientFromQuery( Client @actor, const String &in query, const String &in usage, bool includeSpectators )
-{
-    if ( query.len() == 0 )
-    {
-        WE_Print( actor, usage );
-        WE_PrintPlayers( actor, includeSpectators );
-        return null;
-    }
-
-    if ( query.isNumerical() )
-    {
-        Client @byNum = @G_GetClient( query.toInt() );
-        if ( WE_ClientListed( byNum, includeSpectators ) )
-            return byNum;
-    }
-
-    int matchCount = 0;
-    int exactCount = 0;
-    Client @found = null;
-    Client @exact = null;
-
-    for ( int i = 0; i < maxClients; i++ )
-    {
-        Client @other = @G_GetClient( i );
-        if ( !WE_ClientListed( other, includeSpectators ) )
-            continue;
-        if ( !WE_ClientNameMatches( other, query ) )
-            continue;
-
-        matchCount++;
-        @found = @other;
-        if ( WE_ClientNameEquals( other, query ) )
-        {
-            exactCount++;
-            @exact = @other;
-        }
-    }
-
-    int kind = WE_UniqueMatchKind( matchCount, exactCount );
-    if ( kind == WE_MATCH_UNIQUE )
-        return found;
-    if ( kind == WE_MATCH_EXACT )
-        return exact;
-
-    if ( kind == WE_MATCH_AMBIGUOUS )
-    {
-        WE_Print( actor, WE_MSG_PLAYER_AMBIGUOUS );
-        for ( int i = 0; i < maxClients; i++ )
-        {
-            Client @other = @G_GetClient( i );
-            if ( !WE_ClientListed( other, includeSpectators ) )
-                continue;
-            if ( !WE_ClientNameMatches( other, query ) )
-                continue;
-            WE_PrintPlayerLine( actor, other );
-        }
-        return null;
-    }
-
-    WE_Print( actor, usage );
-    WE_PrintPlayers( actor, includeSpectators );
     return null;
-}
-
-// First args token as userid.
-Client @WE_ClientFromArg( Client @actor, const String &in argsString, const String &in usage, bool includeSpectators )
-{
-    return WE_ClientFromQuery( actor, argsString.getToken( 0 ), usage, includeSpectators );
 }

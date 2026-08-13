@@ -3,7 +3,7 @@ bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
     if ( !WE_RequireOperator( client ) )
         return true;
 
-    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true, false );
     if ( @target == null )
         return true;
     if ( !WE_RequireNotSelf( client, target ) )
@@ -20,9 +20,15 @@ bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
 
 void WE_Cmd_Ban_PrintTargets( Client @client )
 {
-    WE_Print( client, WE_MSG_BAN_USAGE );
-    WE_PrintPlayers( client, true );
-    WE_RecentDisconnects_Print( client );
+    WE_Reply reply;
+    reply.AddLine( WE_MSG_BAN_USAGE );
+    WE_Reply_AddPlayers( reply, true, false );
+    reply.AddLine( "Recently disconnected:" );
+    if ( WE_RecentDisconnects_LoadListed() <= 0 )
+        reply.AddLine( WE_MSG_RECENT_DISCONNECTS_NONE );
+    else
+        WE_Reply_AddRecentDisconnects( reply );
+    reply.Send( client );
 }
 
 bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const String &in reason )
@@ -105,14 +111,31 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
     if ( reason.len() == 0 )
         reason = WE_MSG_NO_REASON;
 
+    // Recent offline slot ids start at 900.
+    if ( query.isNumerical() )
+    {
+        int listId = query.toInt();
+        if ( listId >= WE_RECENT_ID_BASE )
+        {
+            WE_RecentDisconnects_LoadListed();
+            String recentById = WE_RecentDisconnects_SteamIdByListId( listId );
+            if ( recentById.len() > 0 )
+                return WE_Cmd_Ban_ApplySteam( client, recentById, reason );
+            WE_Cmd_Ban_PrintTargets( client );
+            return true;
+        }
+    }
+
     Client @target = @WE_FindClient( query, true );
     if ( @target != null )
         return WE_Cmd_Ban_ApplyClient( client, target, reason );
 
     if ( WE_ClientQueryAmbiguous( query, true ) )
     {
-        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
-        WE_PrintClientMatches( client, query, true );
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Reply_AddPlayerMatches( reply, query, true, false );
+        reply.Send( client );
         return true;
     }
 
@@ -125,9 +148,11 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     if ( steamAmbiguous )
     {
-        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
-        WE_PrintClientSteamMatches( client, query, true );
-        WE_RecentDisconnects_PrintMatchesBy( client, query, false );
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Reply_AddPlayerSteamMatches( reply, query, true, false );
+        WE_Reply_AddRecentMatches( reply, query, false );
+        reply.Send( client );
         return true;
     }
 
@@ -142,8 +167,10 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
 
     if ( WE_RecentDisconnects_QueryAmbiguousBy( query, true ) )
     {
-        WE_Print( client, WE_MSG_PLAYER_AMBIGUOUS );
-        WE_RecentDisconnects_PrintMatchesBy( client, query, true );
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_PLAYER_AMBIGUOUS );
+        WE_Reply_AddRecentMatches( reply, query, true );
+        reply.Send( client );
         return true;
     }
 
@@ -168,8 +195,10 @@ bool WE_Cmd_Unban( Client @client, const String &argsString, int argc )
     WE_Ban_Reload();
     if ( argsString == "" || !argsString.getToken( 0 ).isNumerical() )
     {
-        WE_Print( client, WE_MSG_UNBAN_USAGE );
-        WE_Ban_PrintList( client );
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_UNBAN_USAGE );
+        WE_Ban_PrintList( reply );
+        reply.Send( client );
         return true;
     }
 

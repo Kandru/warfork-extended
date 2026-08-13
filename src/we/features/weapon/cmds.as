@@ -1,35 +1,10 @@
-const int WE_ITEM_TAG_MAX = 64;
-
-void WE_Weapon_PrintItemLine( Client @to, Item @item )
-{
-    if ( @to == null || @item == null )
-        return;
-    String line = item.tag + ": " + item.name;
-    String shortN = item.shortName;
-    if ( shortN.len() > 0 )
-        line += " (" + shortN + ")";
-    WE_Print( to, line + "\n" );
-}
-
-void WE_Weapon_PrintItems( Client @client )
-{
-    WE_Print( client, WE_MSG_ITEMS_HEADER );
-    for ( int i = 1; i < WE_ITEM_TAG_MAX; i++ )
-    {
-        Item @item = @G_GetItem( i );
-        if ( @item == null )
-            continue;
-        if ( item.name.len() == 0 )
-            continue;
-        WE_Weapon_PrintItemLine( client, item );
-    }
-}
-
 void WE_Weapon_PrintUsage( Client @client, const String &in usage )
 {
-    WE_Print( client, usage );
-    WE_PrintPlayers( client, true );
-    WE_Weapon_PrintItems( client );
+    WE_Reply reply;
+    reply.AddLine( usage );
+    WE_Reply_AddPlayers( reply, true, true );
+    WE_Reply_AddItems( reply );
+    reply.Send( client );
 }
 
 bool WE_Weapon_ItemTextMatches( Item @item, const String &in query )
@@ -104,21 +79,17 @@ Item @WE_Weapon_ItemFromQuery( Client @client, const String &in query )
 
     if ( kind == WE_MATCH_AMBIGUOUS )
     {
-        WE_Print( client, WE_MSG_ITEM_AMBIGUOUS );
-        for ( int i = 1; i < WE_ITEM_TAG_MAX; i++ )
-        {
-            Item @item = @G_GetItem( i );
-            if ( @item == null )
-                continue;
-            if ( !WE_Weapon_ItemTextMatches( item, query ) )
-                continue;
-            WE_Weapon_PrintItemLine( client, item );
-        }
+        WE_Reply reply;
+        reply.AddLine( WE_MSG_ITEM_AMBIGUOUS );
+        WE_Reply_AddItems( reply );
+        reply.Send( client );
         return null;
     }
 
-    WE_Print( client, WE_MSG_ITEM_NOT_FOUND );
-    WE_Weapon_PrintItems( client );
+    WE_Reply reply;
+    reply.AddLine( WE_MSG_ITEM_NOT_FOUND );
+    WE_Reply_AddItems( reply );
+    reply.Send( client );
     return null;
 }
 
@@ -175,10 +146,12 @@ bool WE_Weapon_ParseArgs( Client @client, const String &argsString, int argc, co
         return false;
     }
 
-    @target = @WE_ClientFromArg( client, argsString, usage, true );
+    @target = @WE_ClientFromArg( client, argsString, usage, true, true );
     if ( @target == null )
     {
-        WE_Weapon_PrintItems( client );
+        WE_Reply reply;
+        WE_Reply_AddItems( reply );
+        reply.Send( client );
         return false;
     }
 
@@ -266,7 +239,7 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
     if ( !WE_RequireOperator( client ) )
         return true;
 
-    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_WEAPON_STRIP_USAGE, true );
+    Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_WEAPON_STRIP_USAGE, true, true );
     if ( @target == null )
         return true;
 
@@ -277,7 +250,7 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
 
 void WE_Weapon_Register()
 {
-    WE_Cmds_Add( "we_weaponGive", @WE_Cmd_WeaponGive );
-    WE_Cmds_Add( "we_weaponRemove", @WE_Cmd_WeaponRemove );
-    WE_Cmds_Add( "we_weaponStrip", @WE_Cmd_WeaponStrip );
+    WE_Cmds_Add( "we_weaponGive", "<userid> <weaponid>", "Give an item", @WE_Cmd_WeaponGive );
+    WE_Cmds_Add( "we_weaponRemove", "<userid> <weaponid>", "Remove an item", @WE_Cmd_WeaponRemove );
+    WE_Cmds_Add( "we_weaponStrip", "<userid>", "Strip all weapons and ammo", @WE_Cmd_WeaponStrip );
 }

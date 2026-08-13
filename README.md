@@ -33,9 +33,10 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - `reason` is optional
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
-- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (human UTC time). Targets: player slot, unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
+- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (IDs **900+**). Targets: player slot, recent id (`900`…), unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
 - `weaponid` is an item tag, or a unique fragment of the item name / short name
 - `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
+- Console chrome colors: `basewf/warfork-extended/theme.txt` (see [`configs/theme.txt.example`](configs/theme.txt.example); seeded on first run)
 
 ## Requirements
 
@@ -106,7 +107,7 @@ Add AngelScript under `src/we/features/<name>/`, then register in that feature's
 
 ```
 WE_Hooks_AddThinkAfter( @My_Think );
-WE_Cmds_Add( "we_foo", @My_Cmd );
+WE_Cmds_Add( "we_foo", "<userid>", "Do the foo", @My_Cmd );
 ```
 
 Call your `*_Register()` from `WE_Init()` in `src/we/core/main.as`. Hook API uses AngelScript `funcdef` handles (`core/hook_types.as`).

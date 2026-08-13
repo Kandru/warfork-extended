@@ -1,0 +1,15 @@
+---
+description: WE console command reply format (lists, tables, theme)
+globs: src/we/**/*.as
+alwaysApply: true
+---
+
+# WE console replies
+
+- Multi-line command output: build with `WE_Reply`, call `Send` once. Never `WE_Print` per list/table row.
+- `[WE]` prefix only on the first line (`WE_Print` / `Send`). Theme: grey brackets, orange `WE` via `WE_Theme_Prefix`.
+- List items: `AddItem` → grey `- `. Multi-field rows: tables (`TableHeader*` / `TableAddRow` / `TableSet`), not ad-hoc lists.
+- Shared helpers: `WE_Reply_AddPlayers` (optional Team), `WE_Reply_AddRecentDisconnects` (IDs 900+), `WE_Reply_AddItems`, `WE_Reply_AddTeams`.
+- Colors: `WE_Theme_Color(role)` or `S_COLOR_*` only — never `^N` literals. Roles in `warfork-extended/theme.txt` (`accent`/`header` orange, `sep`/`marker` grey, `body` white).
+- Register cmds: `WE_Cmds_Add( name, params, description, @handler )` so `we_help` can list them.
+- Player resolve: `WE_ClientFromArg( …, includeSpectators, withTeam )`. Kick/ban tables omit Team (`withTeam=false`). Recent offline ban targets: numeric IDs ≥ 900.

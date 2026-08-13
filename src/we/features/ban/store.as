@@ -197,19 +197,21 @@ void WE_Ban_RemoveIndex( int index )
     WE_Ban_Write();
 }
 
-void WE_Ban_PrintList( Client @client )
+void WE_Ban_PrintList( WE_Reply @reply )
 {
+    if ( @reply == null )
+        return;
+
     int shown = 0;
     for ( int i = 0; i < weBanCount; i++ )
     {
         if ( weBanSteamId[i].len() == 0 )
             continue;
-        String entry = i + ": " + weBanSteamId[i] + " " + weBanUsername[i];
-        if ( weBanReason[i].len() > 0 )
-            entry += " (" + weBanReason[i] + ")";
-        WE_Print( client, entry + "\n" );
+        if ( shown == 0 )
+            WE_Reply_BeginPlayersTable( reply, false );
+        WE_Reply_AddOfflineRow( reply, i, weBanUsername[i], weBanClan[i], weBanSteamId[i], false );
         shown++;
     }
     if ( shown == 0 )
-        WE_Print( client, WE_MSG_UNBAN_NONE );
+        reply.AddLine( WE_MSG_UNBAN_NONE );
 }
