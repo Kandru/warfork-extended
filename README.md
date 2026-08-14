@@ -117,7 +117,7 @@ servers:
       - "https://discord.com/api/webhooks/OTHER/TOKEN"
 ```
 
-If a server has its own `webhooks` list, that list is used instead of the global one. Offset state is stored in `report-notify.state.json` next to the config (first sighting of a file seeks to EOF so history is not flooded).
+If a server has its own `webhooks` list, that list is used instead of the global one. Cursor state lives next to the config as `<configname>.state.yaml` (for `config.yaml` that is `config.state.yaml`) and stores the last report unix timestamp pushed to Discord per server. If that file is missing, existing `report.txt` lines are ignored and the files are cleared so history is not flooded.
 
 ### Install (cron every minute)
 

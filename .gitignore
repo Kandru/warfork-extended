@@ -9,7 +9,8 @@ scripts/inject/__pycache__/
 
 # Report-notify local runtime (keep examples only)
 tools/report-notify/config.yaml
-tools/report-notify/report-notify.state.json
+tools/report-notify/*.state.yaml
+tools/report-notify/*.state.yaml.tmp
 
 # Custom gametypes (optional local overlay for INCLUDE_CUSTOM=1; not in releases)
 gamemodes/custom/

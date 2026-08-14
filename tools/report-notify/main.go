@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -46,8 +44,8 @@ func main() {
 		log.Fatalf("config: %v", err)
 	}
 
-	statePath := filepath.Join(filepath.Dir(cfgPath), "report-notify.state.json")
-	st, err := loadState(statePath)
+	statePath := statePathForConfig(cfgPath)
+	st, existed, err := loadState(statePath)
 	if err != nil {
 		log.Fatalf("state: %v", err)
 	}
@@ -59,8 +57,20 @@ func main() {
 		client:    newHTTPClient(),
 	}
 
-	// First sighting of a path seeks to EOF (no flood). Later lines notify.
-	if err := app.scanAll(true); err != nil {
+	if !existed {
+		log.Printf("no state file %s; ignoring and resetting report.txt", statePath)
+		if err := app.resetAllReports(); err != nil {
+			log.Fatalf("reset reports: %v", err)
+		}
+		for name := range cfg.Servers {
+			st.setLastUnix(name, 0)
+		}
+		if err := st.save(statePath); err != nil {
+			log.Fatalf("write state: %v", err)
+		}
+	}
+
+	if err := app.scanAll(); err != nil {
 		if *once {
 			log.Fatalf("scan: %v", err)
 		}
@@ -77,7 +87,7 @@ func main() {
 	}
 }
 
-// App holds runtime config and offset state.
+// App holds runtime config and last-notified timestamps.
 type App struct {
 	cfg       *Config
 	state     *State
@@ -85,10 +95,28 @@ type App struct {
 	client    *httpClient
 }
 
-func (a *App) scanAll(notify bool) error {
+func (a *App) resetAllReports() error {
 	var first error
 	for name, srv := range a.cfg.Servers {
-		if err := a.scanServer(name, srv, notify); err != nil {
+		if err := os.Truncate(srv.Path, 0); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			log.Printf("[%s] reset %s: %v", name, srv.Path, err)
+			if first == nil {
+				first = err
+			}
+			continue
+		}
+		log.Printf("[%s] cleared %s", name, srv.Path)
+	}
+	return first
+}
+
+func (a *App) scanAll() error {
+	var first error
+	for name, srv := range a.cfg.Servers {
+		if err := a.scanServer(name, srv); err != nil {
 			log.Printf("[%s] scan: %v", name, err)
 			if first == nil {
 				first = err
@@ -98,84 +126,59 @@ func (a *App) scanAll(notify bool) error {
 	return first
 }
 
-func (a *App) scanServer(name string, srv ServerConfig, notify bool) error {
+func (a *App) scanServer(name string, srv ServerConfig) error {
 	path := srv.Path
-	fi, err := os.Stat(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
 		return err
 	}
-	size := fi.Size()
 
-	entry := a.state.Files[path]
-	if entry == nil {
-		// First sighting: seek to EOF so we do not flood history.
-		a.state.Files[path] = &FileState{Offset: size, Size: size}
-		return a.state.save(a.statePath)
-	}
-
-	offset := entry.Offset
-	if size < offset {
-		offset = 0
-	}
-	if size == offset {
-		a.state.Files[path] = &FileState{Offset: offset, Size: size}
-		return a.state.save(a.statePath)
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if _, err := f.Seek(offset, 0); err != nil {
-		return err
-	}
-
+	last, known := a.state.lastUnix(name)
 	hooks := srv.Webhooks
 	if len(hooks) == 0 {
 		hooks = a.cfg.Webhooks
 	}
 
-	cur := offset
-	br := bufio.NewReader(f)
-	for {
-		line, err := br.ReadString('\n')
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		next := cur + int64(len(line))
-		trimmed := strings.TrimRight(line, "\r\n")
-		if trimmed == "" {
-			cur = next
+	maxUnix := last
+	for _, line := range strings.Split(string(data), "\n") {
+		trimmed := strings.TrimRight(line, "\r")
+		if strings.TrimSpace(trimmed) == "" {
 			continue
 		}
 		rep, err := parseReportLine(trimmed)
 		if err != nil {
 			log.Printf("[%s] skip bad line: %v (%q)", name, err, trimmed)
-			cur = next
 			continue
 		}
-		if notify {
-			if err := a.client.postReport(hooks, name, rep); err != nil {
-				log.Printf("[%s] webhook: %v", name, err)
-				a.state.Files[path] = &FileState{Offset: cur, Size: size}
-				_ = a.state.save(a.statePath)
-				return err
+		if !known {
+			if rep.Unix > maxUnix {
+				maxUnix = rep.Unix
 			}
-			log.Printf("[%s] notified report: %s -> %s", name, rep.ReporterName, rep.ReportedName)
+			continue
 		}
-		cur = next
+		if rep.Unix <= last {
+			continue
+		}
+		if err := a.client.postReport(hooks, name, rep); err != nil {
+			log.Printf("[%s] webhook: %v", name, err)
+			return err
+		}
+		log.Printf("[%s] notified report: %s -> %s", name, rep.ReporterName, rep.ReportedName)
+		last = rep.Unix
+		a.state.setLastUnix(name, last)
+		if err := a.state.save(a.statePath); err != nil {
+			return err
+		}
 	}
 
-	a.state.Files[path] = &FileState{Offset: cur, Size: size}
-	return a.state.save(a.statePath)
+	if !known {
+		a.state.setLastUnix(name, maxUnix)
+		return a.state.save(a.statePath)
+	}
+	return nil
 }
 
 func (a *App) runWatch() error {
@@ -207,7 +210,7 @@ func (a *App) runWatch() error {
 				return a.pollLoop(pollEvery)
 			}
 			if ev.Op&(Write|Create|Rename) != 0 {
-				_ = a.scanAll(true)
+				_ = a.scanAll()
 			}
 		case err, ok := <-watcher.Errors():
 			if !ok {
@@ -216,7 +219,7 @@ func (a *App) runWatch() error {
 			log.Printf("watch error: %v", err)
 		case <-ticker.C:
 			// Safety net for missed events / NFS.
-			_ = a.scanAll(true)
+			_ = a.scanAll()
 		}
 	}
 }
@@ -233,7 +236,7 @@ func (a *App) pollLoop(every time.Duration) error {
 			log.Printf("shutting down")
 			return nil
 		case <-ticker.C:
-			_ = a.scanAll(true)
+			_ = a.scanAll()
 		}
 	}
 }
