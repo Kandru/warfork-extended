@@ -43,7 +43,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - Linux
 - `python3`, `zip`, `make` (and `mv`/`cp` via coreutils)
-- `go` 1.22+ (only to build the optional report webhook notifier)
+- `docker` (only for `make go` / `make go-release` / `make go-install`; container runs as your UID/GID). Host `go` 1.22+: `GO_DOCKER=0`
 
 ## Build
 
@@ -55,7 +55,7 @@ cp config.mk.example config.mk
 make          # help
 make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3 (stock GTs + WE only)
 make dev      # debug inject + copy pk3 into WARFORK_BASEWF
-make go       # dist/go/we-report-notify (report Discord webhooks)
+make go       # dist/go/we-report-notify via Docker Go (GO_DOCKER=0 for host go)
 make go-install  # install binary + example config to /opt/we-report-notify
 ```
 

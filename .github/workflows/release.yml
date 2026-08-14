@@ -46,12 +46,6 @@ jobs:
       - name: Install zip
         run: sudo apt-get update && sudo apt-get install -y zip
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22"
-          cache-dependency-path: tools/report-notify/go.sum
-
       - name: Build prod pk3
         run: make prod
 
