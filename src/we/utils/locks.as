@@ -154,7 +154,7 @@ bool WE_WriteFileLocked( const String &in path, const String &in lockName, const
     return true;
 }
 
-// Append under soft lock (log-style files such as report.txt).
+// Append under soft lock (log-style files).
 bool WE_AppendFileLocked( const String &in path, const String &in lockName, const String &in content )
 {
     if ( lockName.len() == 0 )

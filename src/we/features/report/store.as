@@ -3,6 +3,8 @@ const uint WE_REPORT_COOLDOWN_SEC = 60;
 const uint WE_REPORT_REASON_MIN_LEN = 3;
 const int WE_MAX_REPORT_COOLDOWNS = 64;
 
+Cvar we_sv_hostname( "sv_hostname", "", 0 );
+
 String[] weReportCdKey( WE_MAX_REPORT_COOLDOWNS );
 uint[] weReportCdUntil( WE_MAX_REPORT_COOLDOWNS );
 int weReportCdCount = 0;
@@ -70,6 +72,14 @@ String WE_Report_StatInt( int value )
     return "" + value;
 }
 
+String WE_Report_Hostname()
+{
+    String name = WE_SanitizeField( WE_StripColors( we_sv_hostname.string ) );
+    if ( name.len() == 0 )
+        return "Warfork server";
+    return name;
+}
+
 bool WE_Report_Add( Client @actor, Client @target, const String &in reason )
 {
     if ( @actor == null || @target == null )
@@ -81,12 +91,13 @@ bool WE_Report_Add( Client @actor, Client @target, const String &in reason )
     int suicides = target.stats.suicides;
 
     String line = WE_UnixTimestamp()
+        + ", " + WE_Report_Hostname()
         + ", " + WE_SteamId( actor )
         + ", " + WE_SanitizeField( WE_StripColors( actor.name ) )
-        + ", " + WE_SanitizeField( actor.clanName )
+        + ", " + WE_SanitizeField( WE_StripColors( actor.clanName ) )
         + ", " + WE_SteamId( target )
         + ", " + WE_SanitizeField( WE_StripColors( target.name ) )
-        + ", " + WE_SanitizeField( target.clanName )
+        + ", " + WE_SanitizeField( WE_StripColors( target.clanName ) )
         + ", " + WE_Report_StatInt( score )
         + ", " + WE_Report_StatInt( frags )
         + ", " + WE_Report_StatInt( deaths )
@@ -94,7 +105,7 @@ bool WE_Report_Add( Client @actor, Client @target, const String &in reason )
         + ", " + reason
         + "\n";
 
-    if ( !WE_AppendFileLocked( WE_REPORT_PATH, "report", line ) )
+    if ( !G_AppendToFile( WE_REPORT_PATH, line ) )
         return false;
 
     WE_Report_MarkCooldown( actor );

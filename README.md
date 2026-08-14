@@ -100,7 +100,7 @@ Optional sidecar [`tools/report-notify/`](tools/report-notify/) watches one or m
 
 ### Config
 
-Copy [`tools/report-notify/config.yaml.example`](tools/report-notify/config.yaml.example) to `config.yaml` next to the binary (or pass `-config`). Map server display names to paths; set a global webhook list and/or per-server webhooks:
+Copy [`tools/report-notify/config.yaml.example`](tools/report-notify/config.yaml.example) to `config.yaml` next to the binary (or pass `-config`). List `report.txt` paths; set a global webhook list and/or per-server webhooks. Discord uses `sv_hostname` from each report line (no display name in config):
 
 ```yaml
 webhooks:
@@ -109,19 +109,17 @@ webhooks:
 poll_interval: 1m
 
 servers:
-  eu-dm:
-    path: /path/to/basewf/warfork-extended/report.txt
-  na-ca:
-    path: /path/to/other/basewf/warfork-extended/report.txt
+  - path: /path/to/basewf/warfork-extended/report.txt
+  - path: /path/to/other/basewf/warfork-extended/report.txt
     webhooks:
       - "https://discord.com/api/webhooks/OTHER/TOKEN"
 ```
 
-If a server has its own `webhooks` list, that list is used instead of the global one. Cursor state lives next to the config as `<configname>.state.yaml` (for `config.yaml` that is `config.state.yaml`) and stores the last report unix timestamp pushed to Discord per server. If that file is missing, existing `report.txt` lines are ignored and the files are cleared so history is not flooded.
+If a server has its own `webhooks` list, that list is used instead of the global one. After every line in a file is posted, that `report.txt` is truncated. A report appended by the game during the truncate can be lost; that is accepted.
 
-### Install (cron every minute)
+### Install (cron)
 
-Recommended production setup:
+One-shot mode (`-cron`) reads the files, posts, truncates, and exits. It does not watch for changes.
 
 ```bash
 make go-install                    # PREFIX=/opt/we-report-notify
@@ -129,15 +127,32 @@ sudo $EDITOR /opt/we-report-notify/config.yaml
 sudo crontab -e                    # paste tools/report-notify/crontab.example
 ```
 
-Crontab line:
-
 ```
-* * * * * /opt/we-report-notify/we-report-notify -once
+* * * * * /opt/we-report-notify/we-report-notify -cron
 ```
 
-`-once` scans, posts any new lines, then exits (safe for cron; no stacked daemons).
+(`-once` is an alias for `-cron`.)
 
-Alternatively run long-lived for near-instant pings (`/opt/we-report-notify/we-report-notify`, uses fsnotify with poll fallback). GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3.
+### Install (systemd)
+
+Long-running watcher (fsnotify with poll fallback). Restarts automatically if the process exits with an error:
+
+```bash
+make go-install
+sudo $EDITOR /opt/we-report-notify/config.yaml
+sudo cp tools/report-notify/we-report-notify.service.example /etc/systemd/system/we-report-notify.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now we-report-notify.service
+journalctl -u we-report-notify -f
+```
+
+Sent reports are printed to stdout, for example:
+
+```
+sent EU DM | Alice [TAG] reported Bob [CLAN] | 7656119… -> 7656119… | score=10 frags=8 deaths=3 suicides=1 | wallhacks
+```
+
+GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3.
 
 ## Extending (features)
 

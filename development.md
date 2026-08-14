@@ -283,6 +283,6 @@ basewf/warfork-extended/
     <steamid>.txt    # WE keys (incl. award_*) + cust_* keys
 ```
 
-`report.txt` lines are CSV: `unix, reporterSteam, reporterName, reporterClan, reportedSteam, reportedName, reportedClan, score, frags, deaths, suicides, reason`. Written via locked append (`we_report` / `report`).
+`report.txt` lines are CSV: `unix, hostname, reporterSteam, reporterName, reporterClan, reportedSteam, reportedName, reportedClan, score, frags, deaths, suicides, reason`. Hostname is `sv_hostname` with color tokens stripped. Names and clan tags are color-stripped. Appended by `we_report` / `report`; the notify sidecar truncates the file after posting.
 
 `recent_disconnects.txt` is shared across servers on the same `basewf`. Writers lock (`recent_disconnects`), reload, merge, sort by leave unix, keep 25 unique ids, then write. No time expiry — only the max-user cap. Updated on disconnect, init, and shutdown. Offline ban list IDs start at **900**.

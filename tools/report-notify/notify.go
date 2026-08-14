@@ -44,8 +44,8 @@ type discordPayload struct {
 	Embeds  []discordEmbed `json:"embeds"`
 }
 
-func (c *httpClient) postReport(urls []string, server string, r *Report) error {
-	payload := buildPayload(server, r)
+func (c *httpClient) postReport(urls []string, r *Report) error {
+	payload := buildPayload(r)
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (c *httpClient) postReport(urls []string, server string, r *Report) error {
 	return first
 }
 
-func buildPayload(server string, r *Report) discordPayload {
+func buildPayload(r *Report) discordPayload {
 	reporter := formatPlayer(r.ReporterName, r.ReporterClan, r.ReporterSteam)
 	reported := formatPlayer(r.ReportedName, r.ReportedClan, r.ReportedSteam)
 	reason := r.Reason
@@ -69,14 +69,14 @@ func buildPayload(server string, r *Report) discordPayload {
 		reason = "(none)"
 	}
 	ts := r.timeUTC()
+	title := fmt.Sprintf("%s reported %s in Warfork", displayName(r.ReporterName), displayName(r.ReportedName))
 	return discordPayload{
-		Content: fmt.Sprintf("**Player report** on `%s`", server),
 		Embeds: []discordEmbed{{
-			Title:     "Report filed",
+			Title:     title,
 			Color:     0xE74C3C,
 			Timestamp: ts.Format(time.RFC3339),
 			Fields: []discordField{
-				{Name: "Server", Value: server, Inline: true},
+				{Name: "Server", Value: r.serverLabel(), Inline: true},
 				{Name: "Time (UTC)", Value: ts.Format("2006-01-02 15:04:05"), Inline: true},
 				{Name: "Reporter", Value: reporter, Inline: false},
 				{Name: "Reported", Value: reported, Inline: false},
@@ -91,23 +91,72 @@ func buildPayload(server string, r *Report) discordPayload {
 	}
 }
 
-func formatPlayer(name, clan, steam string) string {
-	var b strings.Builder
+func displayName(name string) string {
 	if name == "" {
-		name = "?"
+		return "?"
 	}
-	b.WriteString(name)
+	return name
+}
+
+func formatPlayerPlain(name, clan, steam string) string {
+	var b strings.Builder
+	b.WriteString(displayName(name))
 	if clan != "" {
 		b.WriteString(" [")
 		b.WriteString(clan)
 		b.WriteString("]")
 	}
 	if steam != "" {
-		b.WriteString("\n`")
+		b.WriteByte(' ')
 		b.WriteString(steam)
-		b.WriteString("`")
 	}
 	return b.String()
+}
+
+func formatSentLine(r *Report) string {
+	reason := r.Reason
+	if reason == "" {
+		reason = "(none)"
+	}
+	return fmt.Sprintf(
+		"sent %s | %s reported %s | %s -> %s | score=%s frags=%s deaths=%s suicides=%s | %s",
+		r.serverLabel(),
+		formatPlayerPlain(r.ReporterName, r.ReporterClan, ""),
+		formatPlayerPlain(r.ReportedName, r.ReportedClan, ""),
+		orDash(r.ReporterSteam),
+		orDash(r.ReportedSteam),
+		r.Score, r.Frags, r.Deaths, r.Suicides,
+		reason,
+	)
+}
+
+func orDash(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
+}
+
+func formatPlayer(name, clan, steam string) string {
+	var b strings.Builder
+	b.WriteString(displayName(name))
+	if clan != "" {
+		b.WriteString(" [")
+		b.WriteString(clan)
+		b.WriteString("]")
+	}
+	if steam != "" {
+		b.WriteString("\n")
+		b.WriteString(steamLink(steam))
+	}
+	return b.String()
+}
+
+func steamLink(id string) string {
+	if id == "" {
+		return ""
+	}
+	return fmt.Sprintf("[%s](https://steamcommunity.com/profiles/%s)", id, id)
 }
 
 func (c *httpClient) postWithRetry(url string, body []byte) error {

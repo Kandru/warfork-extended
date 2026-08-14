@@ -144,7 +144,8 @@ go-install: go
 		echo "Keeping existing $(PREFIX)/config.yaml"; \
 	fi
 	@echo "Installed $(PREFIX)/$(GO_BIN)"
-	@echo "Cron: see $(GO_DIR)/crontab.example (use -once every minute)"
+	@echo "Cron:     see $(GO_DIR)/crontab.example (use -cron every minute)"
+	@echo "systemd:  see $(GO_DIR)/we-report-notify.service.example"
 
 clean:
 	rm -rf dist

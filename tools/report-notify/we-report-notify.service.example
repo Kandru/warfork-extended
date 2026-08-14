@@ -1,0 +1,31 @@
+# systemd unit for the long-running watcher (fsnotify + poll fallback).
+# Cron users should use crontab.example with -cron instead of this unit.
+#
+#   make go-install
+#   sudo $EDITOR /opt/we-report-notify/config.yaml
+#   sudo cp tools/report-notify/we-report-notify.service.example /etc/systemd/system/we-report-notify.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now we-report-notify.service
+#
+# Logs (including sent reports) go to the journal:
+#   journalctl -u we-report-notify -f
+
+[Unit]
+Description=warfork-extended Discord report notify
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/we-report-notify
+ExecStart=/opt/we-report-notify/we-report-notify
+Restart=on-failure
+RestartSec=5
+# Drop privileges if the report.txt files are readable by this user:
+# User=warfork
+# Group=warfork
+
+[Install]
+WantedBy=multi-user.target

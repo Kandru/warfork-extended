@@ -5,11 +5,10 @@ webhooks:
 # Used if inotify/fsnotify is unavailable (long-running mode only).
 poll_interval: 1m
 
+# Display name comes from sv_hostname in each report.txt line.
 servers:
-  eu-dm:
-    path: /path/to/basewf/warfork-extended/report.txt
+  - path: /path/to/basewf/warfork-extended/report.txt
   # Optional per-server webhooks replace the global list for that file:
-  # na-ca:
-  #   path: /path/to/other/basewf/warfork-extended/report.txt
+  # - path: /path/to/other/basewf/warfork-extended/report.txt
   #   webhooks:
   #     - "https://discord.com/api/webhooks/OTHER/TOKEN"

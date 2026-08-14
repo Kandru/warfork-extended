@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -16,8 +17,12 @@ import (
 var version = "dev"
 
 func main() {
+	log.SetOutput(os.Stdout)
+	log.SetFlags(log.LstdFlags)
+
 	configPath := flag.String("config", "", "path to config.yaml (default: next to binary)")
-	once := flag.Bool("once", false, "scan once and exit (for cron)")
+	cron := flag.Bool("cron", false, "read report files once, post, truncate, exit (no file watch)")
+	once := flag.Bool("once", false, "alias for -cron")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 
@@ -44,40 +49,19 @@ func main() {
 		log.Fatalf("config: %v", err)
 	}
 
-	statePath := statePathForConfig(cfgPath)
-	st, existed, err := loadState(statePath)
-	if err != nil {
-		log.Fatalf("state: %v", err)
-	}
-
 	app := &App{
-		cfg:       cfg,
-		state:     st,
-		statePath: statePath,
-		client:    newHTTPClient(),
-	}
-
-	if !existed {
-		log.Printf("no state file %s; ignoring and resetting report.txt", statePath)
-		if err := app.resetAllReports(); err != nil {
-			log.Fatalf("reset reports: %v", err)
-		}
-		for name := range cfg.Servers {
-			st.setLastUnix(name, 0)
-		}
-		if err := st.save(statePath); err != nil {
-			log.Fatalf("write state: %v", err)
-		}
+		cfg:    cfg,
+		client: newHTTPClient(),
 	}
 
 	if err := app.scanAll(); err != nil {
-		if *once {
+		if *cron || *once {
 			log.Fatalf("scan: %v", err)
 		}
 		log.Printf("initial scan: %v", err)
 	}
 
-	if *once {
+	if *cron || *once {
 		return
 	}
 
@@ -87,37 +71,16 @@ func main() {
 	}
 }
 
-// App holds runtime config and last-notified timestamps.
 type App struct {
-	cfg       *Config
-	state     *State
-	statePath string
-	client    *httpClient
-}
-
-func (a *App) resetAllReports() error {
-	var first error
-	for name, srv := range a.cfg.Servers {
-		if err := os.Truncate(srv.Path, 0); err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			log.Printf("[%s] reset %s: %v", name, srv.Path, err)
-			if first == nil {
-				first = err
-			}
-			continue
-		}
-		log.Printf("[%s] cleared %s", name, srv.Path)
-	}
-	return first
+	cfg    *Config
+	client *httpClient
 }
 
 func (a *App) scanAll() error {
 	var first error
-	for name, srv := range a.cfg.Servers {
-		if err := a.scanServer(name, srv); err != nil {
-			log.Printf("[%s] scan: %v", name, err)
+	for _, srv := range a.cfg.Servers {
+		if err := a.scanServer(srv); err != nil {
+			log.Printf("[%s] scan: %v", srv.Path, err)
 			if first == nil {
 				first = err
 			}
@@ -126,7 +89,7 @@ func (a *App) scanAll() error {
 	return first
 }
 
-func (a *App) scanServer(name string, srv ServerConfig) error {
+func (a *App) scanServer(srv ServerConfig) error {
 	path := srv.Path
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -135,14 +98,16 @@ func (a *App) scanServer(name string, srv ServerConfig) error {
 		}
 		return err
 	}
+	if len(bytes.TrimSpace(data)) == 0 {
+		return nil
+	}
 
-	last, known := a.state.lastUnix(name)
 	hooks := srv.Webhooks
 	if len(hooks) == 0 {
 		hooks = a.cfg.Webhooks
 	}
 
-	maxUnix := last
+	var reports []*Report
 	for _, line := range strings.Split(string(data), "\n") {
 		trimmed := strings.TrimRight(line, "\r")
 		if strings.TrimSpace(trimmed) == "" {
@@ -150,33 +115,22 @@ func (a *App) scanServer(name string, srv ServerConfig) error {
 		}
 		rep, err := parseReportLine(trimmed)
 		if err != nil {
-			log.Printf("[%s] skip bad line: %v (%q)", name, err, trimmed)
+			log.Printf("[%s] skip bad line: %v (%q)", path, err, trimmed)
 			continue
 		}
-		if !known {
-			if rep.Unix > maxUnix {
-				maxUnix = rep.Unix
-			}
-			continue
-		}
-		if rep.Unix <= last {
-			continue
-		}
-		if err := a.client.postReport(hooks, name, rep); err != nil {
-			log.Printf("[%s] webhook: %v", name, err)
-			return err
-		}
-		log.Printf("[%s] notified report: %s -> %s", name, rep.ReporterName, rep.ReportedName)
-		last = rep.Unix
-		a.state.setLastUnix(name, last)
-		if err := a.state.save(a.statePath); err != nil {
-			return err
-		}
+		reports = append(reports, rep)
 	}
 
-	if !known {
-		a.state.setLastUnix(name, maxUnix)
-		return a.state.save(a.statePath)
+	for _, rep := range reports {
+		if err := a.client.postReport(hooks, rep); err != nil {
+			log.Printf("[%s] webhook: %v", path, err)
+			return err
+		}
+		log.Println(formatSentLine(rep))
+	}
+
+	if err := os.Truncate(path, 0); err != nil {
+		return fmt.Errorf("clear %s: %w", path, err)
 	}
 	return nil
 }
@@ -218,7 +172,6 @@ func (a *App) runWatch() error {
 			}
 			log.Printf("watch error: %v", err)
 		case <-ticker.C:
-			// Safety net for missed events / NFS.
 			_ = a.scanAll()
 		}
 	}

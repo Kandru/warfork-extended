@@ -2,5 +2,6 @@
 #   crontab -e
 # and paste (or merge) the line below.
 #
-# Runs once per minute: scan report.txt files, post new reports, exit.
-* * * * * /opt/we-report-notify/we-report-notify -once
+# One-shot: read report.txt, post, truncate, exit. Does not watch for file changes.
+# For a long-running watcher with restart-on-failure, use we-report-notify.service.example.
+* * * * * /opt/we-report-notify/we-report-notify -cron
