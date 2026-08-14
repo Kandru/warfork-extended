@@ -138,6 +138,51 @@ String visits = WE_GetPlayerDataBySteamId( steamid, "visits" );
 - Do not call internal `WE_UserSet` with bare keys from a custom GT — use `WE_GetPlayerData` / `WE_SetPlayerData`.
 - Bots have no steamid; skip them.
 
+## Named key/value files
+
+For non-player data (server-wide scores, GT settings, feature stores), use named files under:
+
+`basewf/warfork-extended/kv/<name>.txt`
+
+Same `key=value` format as user files. One API for **WE features and custom gamemodes**.
+
+| Function | Purpose |
+|----------|---------|
+| `WE_KvFileGet( name, key )` | Read a value (`""` if missing / disabled) |
+| `WE_KvFileSet( name, key, value )` | Write a value (creates the file) |
+
+- `name` is a stem only: `[A-Za-z0-9_-]+`. Optional trailing `.txt` is stripped. No slashes.
+- File path: `warfork-extended/kv/<name>.txt`. Lock name: `kv_<name>`.
+- **Reads** do not lock; **writes** use `WE_WriteFileLocked` (same soft-lock as users / theme / banlist).
+- Keys and values are sanitized (`WE_SanitizeField`). Requires `we_enabled 1`.
+- Pick distinct names so features and GTs do not share a file by accident (e.g. `highscores`, `mygt_state`).
+
+### Example
+
+```angelscript
+const String KV_HIGHSCORES = "highscores";
+
+void MyGT_LoadBest()
+{
+    String raw = WE_KvFileGet( KV_HIGHSCORES, "best" );
+    int best = 0;
+    if ( raw.len() > 0 && raw.isNumerical() )
+        best = raw.toInt();
+    // ...
+}
+
+void MyGT_SaveBest( int score )
+{
+    String prev = WE_KvFileGet( KV_HIGHSCORES, "best" );
+    int best = 0;
+    if ( prev.len() > 0 && prev.isNumerical() )
+        best = prev.toInt();
+    if ( score <= best )
+        return;
+    WE_KvFileSet( KV_HIGHSCORES, "best", "" + score );
+}
+```
+
 ## In-game choice menus (`WE_Menu`)
 
 Stock Warfork clients can show a **modal choice list** (`mecu`) and a **bind-key QuickMenu**. `WE_Menu` builds both from the same label/command pairs. It is **not** HTML / pseudo-HTML overlays (those need a client/engine fork; vanilla clients only get this list UI).
@@ -216,6 +261,7 @@ Theme file `basewf/warfork-extended/theme.txt` (see `configs/theme.txt.example`)
 | `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |
 | `WE_ClientFromArg( actor, argsString, usage, includeSpectators, withTeam )` | First token; prints usage / player table / matches |
 | `WE_Menu` | Build mecu / QuickMenu choice lists (`src/we/utils/menu.as`) |
+| `WE_KvFileGet` / `WE_KvFileSet` | Named `key=value` files under `kv/<name>.txt` |
 | `WE_Hooks_Add*` / `WE_Cmds_Add` | For framework features under `src/we/` |
 | `WE_Reply` | Console lists/tables (`src/we/utils/console.as`) |
 
@@ -231,6 +277,8 @@ basewf/warfork-extended/
                            # kinds/filters/limits: see awards.md in the repo root
   locks.txt
   recent_disconnects.txt   # shared last-25 steam_ids (lock-merge-write, no TTL)
+  kv/
+    <name>.txt       # named key=value files (WE_KvFileGet/Set)
   users/
     <steamid>.txt    # WE keys (incl. award_*) + cust_* keys
 ```
