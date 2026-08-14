@@ -30,9 +30,9 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 | `we_awards` | everyone | List your earned awards |
 | `we_awardGive <userid> <award_id>` | operator | Grant a catalog award |
 | `we_awardRemove <userid> <award_id>` | operator | Remove one count of a catalog award |
-| `we_report <userid> [reason]` | everyone | File a player report (`report` alias; writes `report.txt`; announces in chat). On death, victims see a hint to report the killer. |
+| `we_report <userid> <reason>` | everyone | File a player report (`report` alias; writes `report.txt`; announces in chat). On death, victims see a hint to report the killer. |
 
-- `reason` is optional
+- `reason` is required for `we_report` / `report` (at least 3 characters); optional for kick/ban
 - `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
 - `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (IDs **900+**). Targets: player slot, recent id (`900`…), unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
 - `weaponid` is an item tag, or a unique fragment of the item name / short name

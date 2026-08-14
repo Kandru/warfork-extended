@@ -18,9 +18,17 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
         return true;
     }
 
-    String reason = WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) );
+    String reason = WE_Trim( WE_SanitizeReason( WE_JoinArgs( argsString, 1, argc ) ) );
     if ( reason.len() == 0 )
-        reason = WE_MSG_NO_REASON;
+    {
+        WE_Print( client, WE_MSG_REPORT_USAGE );
+        return true;
+    }
+    if ( reason.len() < WE_REPORT_REASON_MIN_LEN )
+    {
+        WE_Print( client, WE_MSG_REPORT_REASON_SHORT );
+        return true;
+    }
 
     if ( !WE_Report_Add( client, target, reason ) )
     {
@@ -62,6 +70,7 @@ void WE_Report_OnKill( Client @attackerClient, const String &args )
     WE_Print( victim,
         WE_MSG_REPORT_DEATH_HINT_PREFIX
         + attackerClient.playerNum
+        + WE_MSG_REPORT_DEATH_HINT_REASON
         + WE_MSG_REPORT_DEATH_HINT_MID
         + attackerClient.name
         + "\n" );
@@ -80,6 +89,6 @@ void WE_Report_OnScoreEvent( Client @client, const String &score_event, const St
 void WE_Report_Register()
 {
     WE_Hooks_AddScoreEventAfter( @WE_Report_OnScoreEvent );
-    WE_Cmds_Add( "we_report", "<userid> [reason]", "File a player report", @WE_Cmd_Report );
-    WE_Cmds_Add( "report", "<userid> [reason]", "File a player report", @WE_Cmd_Report );
+    WE_Cmds_Add( "we_report", "<userid> <reason>", "File a player report", @WE_Cmd_Report );
+    WE_Cmds_Add( "report", "<userid> <reason>", "File a player report", @WE_Cmd_Report );
 }

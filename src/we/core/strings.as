@@ -69,7 +69,8 @@ const String WE_MSG_AWARD_UNKNOWN = S_COLOR_RED + "Unknown award id.\n";
 const String WE_MSG_AWARD_CHAT_GOT = S_COLOR_WHITE + " got the award: ";
 
 const String WE_MSG_REPORT_DISABLED = S_COLOR_YELLOW + "Report feature disabled (we_feature_report 0).\n";
-const String WE_MSG_REPORT_USAGE = "usage: report <userid> [reason]\n";
+const String WE_MSG_REPORT_USAGE = "usage: report <userid> <reason>\n";
+const String WE_MSG_REPORT_REASON_SHORT = S_COLOR_YELLOW + "Reason must be at least 3 characters.\n";
 const String WE_MSG_REPORT_COOLDOWN = S_COLOR_YELLOW + "Please wait before filing another report.\n";
 const String WE_MSG_REPORT_FAILED = S_COLOR_RED + "Could not write report (try again).\n";
 const String WE_MSG_REPORT_FILED_PREFIX = S_COLOR_GREEN + "Report filed against ";
@@ -77,6 +78,7 @@ const String WE_MSG_REPORT_FILED_SUFFIX = ".\n";
 const String WE_MSG_REPORT_REASON_PREFIX = "Reason: ";
 const String WE_MSG_REPORT_REVIEW = "An admin will review it.\n";
 const String WE_MSG_REPORT_DEATH_HINT_PREFIX = S_COLOR_YELLOW + "Type " + S_COLOR_WHITE + "report ";
+const String WE_MSG_REPORT_DEATH_HINT_REASON = S_COLOR_WHITE + " <reason>";
 const String WE_MSG_REPORT_DEATH_HINT_MID = S_COLOR_YELLOW + " to report ";
 const String WE_MSG_REPORT_CHAT_PREFIX = S_COLOR_YELLOW + "[WE] ";
 const String WE_MSG_REPORT_CHAT_REPORTED = S_COLOR_WHITE + " reported ";

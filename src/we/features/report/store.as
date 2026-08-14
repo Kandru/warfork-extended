@@ -1,5 +1,6 @@
 const String WE_REPORT_PATH = "warfork-extended/report.txt";
 const uint WE_REPORT_COOLDOWN_SEC = 60;
+const uint WE_REPORT_REASON_MIN_LEN = 3;
 const int WE_MAX_REPORT_COOLDOWNS = 64;
 
 String[] weReportCdKey( WE_MAX_REPORT_COOLDOWNS );
