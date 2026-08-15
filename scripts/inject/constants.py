@@ -64,6 +64,7 @@ WE_MODULES = (
     "utils/perms.as",
     "utils/clients.as",
     "player/userinfo.as",
+    "core/operators.as",
     "player/users.as",
     "utils/console.as",
     "player/player_data.as",
@@ -79,6 +80,9 @@ WE_MODULES = (
     "features/report/store.as",
     "features/report/cmds.as",
     "features/welcome/welcome.as",
+    "features/opannounce/opannounce.as",
+    "features/clan/clan.as",
+    "features/nickban/nickban.as",
     "core/core_cmds.as",
     "core/main.as",
 )

@@ -13,6 +13,8 @@ funcdef void WE_HookScoreEventAfterFn( Client @client, const String &score_event
 funcdef void WE_HookShutdownFn();
 funcdef void WE_HookMatchStateStartedAfterFn();
 funcdef void WE_HookPlayerRespawnAfterFn( Entity @ent, int old_team, int new_team );
+// Scoreboard: rewrite message after GT_ScoreboardMessage__orig (return final string).
+funcdef String @WE_HookScoreboardMessageAfterFn( String @msg, uint maxlen );
 
 // Console command: return true = handled (skip GT_Command__orig)
 funcdef bool WE_CmdHandlerFn( Client @client, const String &argsString, int argc );

@@ -9,6 +9,7 @@ void WE_Init()
     WE_Locks_Register();
     WE_CoreCmds_Register();
     WE_Users_Register();
+    WE_Operators_Register();
     WE_Ban_Register();
     WE_Weapon_Register();
     WE_Respawn_Register();
@@ -17,6 +18,9 @@ void WE_Init()
     WE_Awards_RegisterCmds();
     WE_Report_Register();
     WE_Welcome_Register();
+    WE_OpAnnounce_Register();
+    WE_Clan_Register();
+    WE_NickBan_Register();
 }
 
 void WE_Init_After()

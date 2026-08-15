@@ -7,9 +7,13 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Injects hooks around engine `GT_*` callbacks
 - Stores data in `basewf/warfork-extended/*`
 - SteamID-based player identity
+- Operators via engine `op <password>` **or** SteamIDs in `we_operators`
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
 - Player reports (`we_report` / `report` → `report.txt`)
 - Join tip in chat pointing players at `we_help` (`we_feature_welcome`)
+- Optional operator join announce (`we_feature_opannounce`)
+- Optional scoreboard clan override for operators / reserved tag (`we_feature_clan`)
+- Optional nick-change spam auto-ban (`we_feature_nickban`)
 - Custom awards (`award_*` counters with every/map/round/once frequency, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
@@ -37,6 +41,10 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (IDs **900+**). Targets: player slot, recent id (`900`…), unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
 - `weaponid` is an item tag, or a unique fragment of the item name / short name
 - `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
+- Operator = engine `op <password>` **or** SteamID64 listed in `we_operators` (comma-separated; spaces/tabs OK)
+- `we_feature_opannounce`: chat line `[WE] <name> is an operator` on join
+- `we_feature_clan`: scoreboard clan — operators show `we_clan_tag` (optional `we_clan_color`); non-ops whose clan matches `we_clan_reserved` (color-stripped, case-insensitive) show `-`
+- `we_feature_nickban`: consecutive in-game name changes → warn, then ban+kick (`name change spam`)
 - Console chrome colors: `basewf/warfork-extended/theme.txt` (see [`configs/theme.txt.example`](configs/theme.txt.example); seeded on first run)
 
 ## Requirements
@@ -72,7 +80,7 @@ make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
 
 `CUSTOM_ROOT` must contain `progs/gametypes/<name>.gt` (+ `.as` extras). Filenames stay unprefixed. Put both pk3s in `basewf`.
 
-Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild.
+Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
 
 Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
 
@@ -83,6 +91,7 @@ Paste cvars into your `server.cfg` (see [`configs/warfork-extended.cfg.example`]
 ```
 set we_enabled "1"
 set we_debug "0"
+set we_operators ""
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"
@@ -92,6 +101,12 @@ set we_awards_center_message "1"
 set we_awards_chat_message "1"
 set we_feature_report "1"
 set we_feature_welcome "1"
+set we_feature_opannounce "1"
+set we_feature_clan "0"
+set we_clan_tag ""
+set we_clan_color ""
+set we_clan_reserved ""
+set we_feature_nickban "0"
 ```
 
 ## Report webhooks

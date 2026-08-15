@@ -7,6 +7,7 @@ WE_HookScoreEventAfterFn@[] weHookScoreAfter( WE_MAX_HOOKS );
 WE_HookShutdownFn@[] weHookShutdown( WE_MAX_HOOKS );
 WE_HookMatchStateStartedAfterFn@[] weHookMatchStateStartedAfter( WE_MAX_HOOKS );
 WE_HookPlayerRespawnAfterFn@[] weHookPlayerRespawnAfter( WE_MAX_HOOKS );
+WE_HookScoreboardMessageAfterFn@[] weHookScoreboardAfter( WE_MAX_HOOKS );
 
 int weHookThinkBeforeCount = 0;
 int weHookThinkAfterCount = 0;
@@ -15,6 +16,7 @@ int weHookScoreAfterCount = 0;
 int weHookShutdownCount = 0;
 int weHookMatchStateStartedAfterCount = 0;
 int weHookPlayerRespawnAfterCount = 0;
+int weHookScoreboardAfterCount = 0;
 
 void WE_Hooks_AddThinkBefore( WE_HookThinkBeforeFn @fn )
 {
@@ -84,6 +86,16 @@ void WE_Hooks_AddPlayerRespawnAfter( WE_HookPlayerRespawnAfterFn @fn )
         return;
     @weHookPlayerRespawnAfter[weHookPlayerRespawnAfterCount] = fn;
     weHookPlayerRespawnAfterCount++;
+}
+
+void WE_Hooks_AddScoreboardMessageAfter( WE_HookScoreboardMessageAfterFn @fn )
+{
+    if ( @fn == null )
+        return;
+    if ( weHookScoreboardAfterCount >= WE_MAX_HOOKS )
+        return;
+    @weHookScoreboardAfter[weHookScoreboardAfterCount] = fn;
+    weHookScoreboardAfterCount++;
 }
 
 // true => skip GT_ThinkRules__orig
@@ -159,4 +171,16 @@ void WE_Hooks_DispatchPlayerRespawnAfter( Entity @ent, int old_team, int new_tea
             continue;
         weHookPlayerRespawnAfter[i]( ent, old_team, new_team );
     }
+}
+
+String @WE_Hooks_DispatchScoreboardMessageAfter( String @msg, uint maxlen )
+{
+    String @cur = @msg;
+    for ( int i = 0; i < weHookScoreboardAfterCount; i++ )
+    {
+        if ( @weHookScoreboardAfter[i] == null )
+            continue;
+        @cur = weHookScoreboardAfter[i]( cur, maxlen );
+    }
+    return cur;
 }

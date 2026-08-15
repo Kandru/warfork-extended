@@ -14,4 +14,4 @@ alwaysApply: false
 - `localTime` = wall-clock unix seconds (`time_t`); `levelTime` = match time. Do not divide `localTime`.
 - Userinfo: `client.getUserInfoKey("steam_id")`; identity = steam_id only (ignore empty/bots).
 - Files: `G_LoadFile` / `G_WriteFile` / `G_AppendToFile` / `G_FileLength`. Colors: `removeColorTokens()`.
-- Ops: `client.isOperator`; kick via `G_CmdExecute("kick N\n")` or `dropClient`.
+- Ops: `WE_IsOperator` (engine `client.isOperator` / `op <password>`, or SteamID in `we_operators`); kick via `G_CmdExecute("kick N\n")` or `dropClient`.

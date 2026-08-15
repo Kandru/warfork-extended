@@ -7,7 +7,11 @@ set we_enabled "1"
 // Extra G_Print on GT_* wrappers except GT_ThinkRules (dev builds)
 set we_debug "0"
 
-// Feature toggles (player/users is always on when we_enabled is 1)
+// Comma-separated SteamID64 operators (spaces/tabs OK). Same privileges as op <password>.
+// set we_operators "76561198019045610,76561198020334905"
+set we_operators ""
+
+// Feature toggles (player/users + operators are always on when we_enabled is 1)
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"
@@ -17,3 +21,16 @@ set we_awards_center_message "1"
 set we_awards_chat_message "1"
 set we_feature_report "1"
 set we_feature_welcome "1"
+set we_feature_opannounce "1"
+
+// Scoreboard clan override (operators get tag; non-ops cannot display reserved)
+set we_feature_clan "0"
+// set we_clan_tag "Kandru"
+// set we_clan_color "red"
+// set we_clan_reserved "kandru"
+set we_clan_tag ""
+set we_clan_color ""
+set we_clan_reserved ""
+
+// Ban players who change name too often while playing
+set we_feature_nickban "0"

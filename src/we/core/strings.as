@@ -89,5 +89,12 @@ const String WE_MSG_WELCOME_TYPE = ", type ";
 const String WE_MSG_WELCOME_CMD = "we_help";
 const String WE_MSG_WELCOME_SUFFIX = " into the console\n";
 
+const String WE_MSG_OPANNOUNCE_SUFFIX = " is an operator\n";
+
+const String WE_MSG_NICKBAN_WARN1 = "Changing your name too often will get you banned.\n";
+const String WE_MSG_NICKBAN_WARN2 = "One more name change will get you banned.\n";
+const String WE_MSG_NICKBAN_PUBLIC_MID = " was banned for changing name too often.\n";
+const String WE_MSG_NICKBAN_REASON = "name change spam";
+
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";

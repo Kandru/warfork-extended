@@ -2,7 +2,9 @@ bool WE_IsOperator( Client @client )
 {
     if ( @client == null )
         return false;
-    return client.isOperator;
+    if ( client.isOperator )
+        return true;
+    return WE_IsListedOperator( client );
 }
 
 bool WE_RequireOperator( Client @client )

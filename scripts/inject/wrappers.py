@@ -131,6 +131,20 @@ def generate_wrappers(mode: str, *, debug: bool) -> str:
             ]
             continue
 
+        if name == "GT_ScoreboardMessage":
+            lines += [
+                "String @GT_ScoreboardMessage( uint maxlen )",
+                "{",
+                *dbg_lines,
+                f"    String @msg = {call};",
+                "    if ( we_enabled.integer == 1 )",
+                "        return WE_Hooks_DispatchScoreboardMessageAfter( msg, maxlen );",
+                "    return msg;",
+                "}",
+                "",
+            ]
+            continue
+
         if rettype == "void":
             lines += [
                 f"void {name}({param_sig})",

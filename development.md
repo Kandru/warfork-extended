@@ -47,7 +47,7 @@ Install **both** pk3s in `basewf`:
 1. `gt_warfork_extended_<VERSION>.pk3` (stock wrapped GTs + WE sources)
 2. Your thin custom pk3
 
-Rebuild the custom pk3 when you bump WE if inject hooks (`ENGINE_HOOKS`) / wrapper dispatches or include order change. Feature-only WE updates that keep the same paths usually work without a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_MatchStateStarted` / `GT_PlayerRespawn` after-hooks), rebuild custom thin pk3s.
+Rebuild the custom pk3 when you bump WE if inject hooks (`ENGINE_HOOKS`) / wrapper dispatches or include order change. Feature-only WE updates that keep the same paths usually work without a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_MatchStateStarted` / `GT_PlayerRespawn` / `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
 
 ### Local debug (optional one-pk3 overlay)
 
@@ -257,6 +257,9 @@ Theme file `basewf/warfork-extended/theme.txt` (see `configs/theme.txt.example`)
 | Function | Notes |
 |----------|--------|
 | `WE_SteamId( client )` | SteamID64 string, or "" |
+| `WE_IsOperator( client )` | Engine `op` / `client.isOperator`, or SteamID in `we_operators` |
+| `WE_RequireOperator( client )` | Gate + deny message; prefer over raw `client.isOperator` |
+| `WE_ScoreboardClan( client )` | Clan column when `we_feature_clan` is on (ops / reserved tag) |
 | `WE_StripColors( text )` | Name without color codes |
 | `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |
 | `WE_ClientFromArg( actor, argsString, usage, includeSpectators, withTeam )` | First token; prints usage / player table / matches |
