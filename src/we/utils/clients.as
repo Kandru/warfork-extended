@@ -3,6 +3,17 @@
 
 const int WE_RECENT_ID_BASE = 900;
 
+String WE_ClientDisplayName( Client @client )
+{
+    if ( @client == null )
+        return "";
+    String name = WE_StripColors( client.name );
+    String clan = WE_Trim( WE_StripColors( client.clanName ) );
+    if ( clan.len() == 0 )
+        return name;
+    return "[" + clan + "] " + name;
+}
+
 bool WE_ClientListed( Client @other, bool includeSpectators )
 {
     if ( @other == null )

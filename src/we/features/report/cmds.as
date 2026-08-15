@@ -6,6 +6,12 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
         return true;
     }
 
+    if ( argsString.getToken( 1 ).len() == 0 )
+    {
+        WE_Print( client, WE_MSG_REPORT_USAGE );
+        return true;
+    }
+
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_REPORT_USAGE, true, true );
     if ( @target == null )
         return true;
@@ -37,7 +43,7 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
     }
 
     WE_Reply reply;
-    reply.AddLine( WE_MSG_REPORT_FILED_PREFIX + target.name + WE_MSG_REPORT_FILED_SUFFIX );
+    reply.AddLine( WE_MSG_REPORT_FILED_PREFIX + WE_ClientDisplayName( target ) + WE_MSG_REPORT_FILED_SUFFIX );
     reply.AddLine( WE_MSG_REPORT_REASON_PREFIX + reason );
     reply.AddLine( WE_MSG_REPORT_REVIEW );
     reply.Send( client );
@@ -46,7 +52,7 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
         WE_MSG_REPORT_CHAT_PREFIX
         + client.name
         + WE_MSG_REPORT_CHAT_REPORTED
-        + target.name
+        + WE_ClientDisplayName( target )
         + WE_MSG_REPORT_CHAT_FOR
         + reason
         + "\n" );
@@ -71,8 +77,8 @@ void WE_Report_OnKill( Client @attackerClient, const String &args )
         WE_MSG_REPORT_DEATH_HINT_PREFIX
         + attackerClient.playerNum
         + WE_MSG_REPORT_DEATH_HINT_REASON
-        + WE_MSG_REPORT_DEATH_HINT_MID
-        + attackerClient.name
+        + WE_MSG_REPORT_DEATH_HINT_SUFFIX
+        + WE_ClientDisplayName( attackerClient )
         + "\n" );
 }
 
