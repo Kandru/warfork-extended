@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .constants import SKIP_NAMES
+from .constants import SKIP_NAMES, is_we_include
 
 
 def _we_name(filename: str) -> str:
@@ -133,7 +133,7 @@ def rewrite_gt_includes_prefer_we(progs: Path, *, assume_we: bool = False) -> No
                 continue
             inc = s[:-1].strip()
             # Never rewrite WE framework includes
-            if inc.replace("\\", "/").startswith("warfork-extended/"):
+            if is_we_include(inc):
                 lines_out.append(f"{inc};")
                 continue
             lines_out.append(

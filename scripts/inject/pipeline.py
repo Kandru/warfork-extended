@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .constants import ENGINE_HOOKS
+from .constants import ENGINE_HOOKS, WE_GT_DIR, we_include
 from .merge import merge_custom_only, merge_sources, read_version
 from .rename import inject_as_files
 from .sources import copy_we_sources, patch_gt_files
@@ -45,7 +45,7 @@ def run(
     stub_includes = write_stubs(progs, per_gt)
 
     wrappers = generate_wrappers(mode, debug=debug)
-    gen = progs / "gametypes" / "warfork-extended" / "gen"
+    gen = progs / "gametypes" / WE_GT_DIR / "gen"
     gen.mkdir(parents=True, exist_ok=True)
     (gen / "wrappers.as").write_text(wrappers, encoding="utf-8")
     patch_gt_files(progs, stub_includes)
@@ -65,7 +65,7 @@ def run_custom(
 ) -> int:
     """Thin custom-GT inject: no WE AS copy; stubs/wrappers unique per GT stem.
 
-    The custom .gt lists warfork-extended/* and we_* shared/generic paths that
+    The custom .gt lists we/* and we_* shared/generic paths that
     resolve from the WE pk3 on the server VFS at load time.
     """
     root = root.resolve()
@@ -84,14 +84,14 @@ def run_custom(
     stub_includes = write_stubs(progs, per_gt)
 
     wrappers = generate_wrappers(mode, debug=debug)
-    gen = progs / "gametypes" / "warfork-extended" / "gen"
+    gen = progs / "gametypes" / WE_GT_DIR / "gen"
     gen.mkdir(parents=True, exist_ok=True)
 
     wrapper_includes: dict[str, str] = {}
     for stem in per_gt:
         name = f"wrappers_{stem}.as"
         (gen / name).write_text(wrappers, encoding="utf-8")
-        wrapper_includes[stem] = f"warfork-extended/gen/{name}"
+        wrapper_includes[stem] = we_include(f"gen/{name}")
 
     patch_gt_files(progs, stub_includes, wrapper_includes=wrapper_includes)
 

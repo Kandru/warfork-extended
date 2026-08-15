@@ -2,7 +2,7 @@
 
 Custom awards are defined in `basewf/warfork-extended/awards.txt` (seeded from [`configs/awards.txt.example`](configs/awards.txt.example) on first run). Loaded once per gametype init / map change. Persistent counts live on the user file as `award_<id>`.
 
-Source: [`src/we/features/awards/awards.as`](src/we/features/awards/awards.as). Cap: **32** awards.
+Source: [`src/we/features/awards/init.as`](src/we/features/awards/init.as). Cap: **32** awards.
 
 ## Catalog format
 

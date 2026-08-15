@@ -2,6 +2,20 @@
 
 from __future__ import annotations
 
+# Pk3 AngelScript folder under progs/gametypes/. Keep short: engine QPATH is
+# 64 including NUL (63 usable). Full section name is progs/gametypes/<include>.
+WE_GT_DIR = "we"
+MAX_SCRIPT_SECTION = 63
+
+
+def we_include(rel: str) -> str:
+    return f"{WE_GT_DIR}/{rel.lstrip('/')}"
+
+
+def is_we_include(inc: str) -> bool:
+    return inc.replace("\\", "/").startswith(f"{WE_GT_DIR}/")
+
+
 # Engine-called gametype entry points only (not helpers like GT_updateScore).
 ENGINE_HOOKS = (
     "GT_Command",
@@ -72,17 +86,17 @@ WE_MODULES = (
     "features/ban/store.as",
     "features/ban/cmds.as",
     "features/ban/enforce.as",
-    "features/weapon/cmds.as",
-    "features/respawn/cmds.as",
-    "features/changeteam/cmds.as",
-    "features/awards/awards.as",
+    "features/weapon/init.as",
+    "features/respawn/init.as",
+    "features/changeteam/init.as",
+    "features/awards/init.as",
     "features/awards/cmds.as",
     "features/report/store.as",
     "features/report/cmds.as",
-    "features/welcome/welcome.as",
-    "features/opannounce/opannounce.as",
-    "features/clan/clan.as",
-    "features/nickban/nickban.as",
+    "features/welcome/init.as",
+    "features/opannounce/init.as",
+    "features/clan/init.as",
+    "features/nickban/init.as",
     "core/core_cmds.as",
     "core/main.as",
 )

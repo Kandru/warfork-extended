@@ -1,6 +1,6 @@
 # warfork-extended
 
-Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths).
+Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths). Injected AngelScript lives under `progs/gametypes/we/` (engine QPATH is 63 chars; `warfork-extended/` as a folder name truncates `.as`). Runtime data stays in `basewf/warfork-extended/`.
 
 ## What it does
 
@@ -107,7 +107,7 @@ make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
 
 Custom GT repos (e.g. agungame) should run `make dev` only for their thin pk3. Install `gt_warfork_extended_*.pk3` via `make dev` in this repo — do not rely on a vendored copy of warfork-extended to deploy WE.
 
-Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
+Rebuild the custom pk3 when you bump WE if inject hooks / include order / `we/` paths change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
 
 Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
 

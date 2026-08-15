@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .constants import ENGINE_HOOKS, HOOK_SIGS
+from .constants import ENGINE_HOOKS, HOOK_SIGS, WE_GT_DIR, we_include
 
 
 def stub_orig(name: str) -> str:
@@ -30,7 +30,7 @@ def stub_orig(name: str) -> str:
 
 def write_stubs(progs: Path, per_gt: dict[str, set[str]]) -> dict[str, str]:
     """Per-gametype stubs under gen/. Return include path per stem."""
-    gen = progs / "gametypes" / "warfork-extended" / "gen"
+    gen = progs / "gametypes" / WE_GT_DIR / "gen"
     gen.mkdir(parents=True, exist_ok=True)
     stub_includes: dict[str, str] = {}
 
@@ -50,5 +50,5 @@ def write_stubs(progs: Path, per_gt: dict[str, set[str]]) -> dict[str, str]:
                 f"// AUTO-GENERATED — {stem} defines all engine hooks\n",
                 encoding="utf-8",
             )
-        stub_includes[stem] = f"warfork-extended/gen/{stub_name}"
+        stub_includes[stem] = we_include(f"gen/{stub_name}")
     return stub_includes

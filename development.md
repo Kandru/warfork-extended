@@ -38,7 +38,8 @@ What the injector does:
 - Copies only your `progs/` (does **not** embed `src/we/`)
 - Rewrites stock includes (`shared/`, `generic/`, …) to `we_*` names expected from the WE pk3
 - Renames engine `GT_*` → `GT_*__orig`, writes per-GT stubs + `wrappers_<stem>.as`
-- Patches the `.gt` list: shared → stubs → WE modules → your scripts → wrappers
+- Patches the `.gt` list: shared → stubs → WE modules (`we/…`) → your scripts → wrappers
+- Rejects includes whose full VFS path (`progs/gametypes/<path>`) exceeds 63 chars (engine QPATH; `.as` gets truncated)
 
 ### Server
 

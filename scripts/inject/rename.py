@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from .constants import ENGINE_HOOKS
+from .constants import ENGINE_HOOKS, WE_GT_DIR
 from .merge import is_under, parse_gt_includes, resolve_as_path
 
 
@@ -33,7 +33,7 @@ def hooks_in_text(text: str) -> set[str]:
 def inject_as_files(progs: Path) -> dict[str, set[str]]:
     """Rename GT_* defs. Return hooks found per .gt stem."""
     gametypes = progs / "gametypes"
-    we_dir = gametypes / "warfork-extended"
+    we_dir = gametypes / WE_GT_DIR
 
     for as_path in gametypes.rglob("*.as"):
         if is_under(as_path, we_dir):
