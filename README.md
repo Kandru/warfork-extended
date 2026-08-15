@@ -130,7 +130,7 @@ Example (clan + nickban left off until configured):
 ```
 set we_enabled "1"
 set we_debug "0"
-set we_operators "76561198019045610,76561198020334905"
+set we_operators "0000000,111111,22222"
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"

@@ -11,7 +11,6 @@ set we_debug "0"
 // SteamID64 operators (comma-separated; spaces/tabs OK).
 // Same privileges as engine: op <password>
 // Always on when we_enabled is 1 (no we_feature_* gate).
-// set we_operators "76561198019045610,76561198020334905"
 set we_operators ""
 
 // Feature toggles (player/users + we_operators are always on when we_enabled is 1)
