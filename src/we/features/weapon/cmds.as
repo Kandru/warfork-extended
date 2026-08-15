@@ -250,7 +250,7 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
 
 void WE_Weapon_Register()
 {
-    WE_Cmds_Add( "we_weaponGive", "<userid> <weaponid>", "Give an item", @WE_Cmd_WeaponGive );
-    WE_Cmds_Add( "we_weaponRemove", "<userid> <weaponid>", "Remove an item", @WE_Cmd_WeaponRemove );
-    WE_Cmds_Add( "we_weaponStrip", "<userid>", "Strip all weapons and ammo", @WE_Cmd_WeaponStrip );
+    WE_Cmds_Add( "we_weaponGive", "<userid> <weaponid>", "Give an item", true, @WE_Cmd_WeaponGive );
+    WE_Cmds_Add( "we_weaponRemove", "<userid> <weaponid>", "Remove an item", true, @WE_Cmd_WeaponRemove );
+    WE_Cmds_Add( "we_weaponStrip", "<userid>", "Strip all weapons and ammo", true, @WE_Cmd_WeaponStrip );
 }

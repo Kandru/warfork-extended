@@ -202,7 +202,7 @@ bool WE_Cmd_AwardRemove( Client @client, const String &argsString, int argc )
 
 void WE_Awards_RegisterCmds()
 {
-    WE_Cmds_Add( "we_awards", "", "List available awards and your counts", @WE_Cmd_Awards );
-    WE_Cmds_Add( "we_awardGive", "<userid> <award_id>", "Grant a catalog award", @WE_Cmd_AwardGive );
-    WE_Cmds_Add( "we_awardRemove", "<userid> <award_id>", "Remove one award count", @WE_Cmd_AwardRemove );
+    WE_Cmds_Add( "we_awards", "", "List available awards and your counts", false, @WE_Cmd_Awards );
+    WE_Cmds_Add( "we_awardGive", "<userid> <award_id>", "Grant a catalog award", true, @WE_Cmd_AwardGive );
+    WE_Cmds_Add( "we_awardRemove", "<userid> <award_id>", "Remove one award count", true, @WE_Cmd_AwardRemove );
 }

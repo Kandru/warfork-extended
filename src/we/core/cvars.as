@@ -15,6 +15,5 @@ Cvar we_feature_welcome( "we_feature_welcome", "1", 0 );
 Cvar we_feature_opannounce( "we_feature_opannounce", "1", 0 );
 Cvar we_feature_clan( "we_feature_clan", "0", 0 );
 Cvar we_clan_tag( "we_clan_tag", "", 0 );
-Cvar we_clan_color( "we_clan_color", "", 0 );
 Cvar we_clan_reserved( "we_clan_reserved", "", 0 );
 Cvar we_feature_nickban( "we_feature_nickban", "0", 0 );

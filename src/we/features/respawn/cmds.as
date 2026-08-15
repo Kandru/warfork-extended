@@ -26,5 +26,5 @@ bool WE_Cmd_Respawn( Client @client, const String &argsString, int argc )
 
 void WE_Respawn_Register()
 {
-    WE_Cmds_Add( "we_respawn", "<userid>", "Force-respawn a player", @WE_Cmd_Respawn );
+    WE_Cmds_Add( "we_respawn", "<userid>", "Force-respawn a player", true, @WE_Cmd_Respawn );
 }

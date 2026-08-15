@@ -89,6 +89,6 @@ void WE_Report_OnScoreEvent( Client @client, const String &score_event, const St
 void WE_Report_Register()
 {
     WE_Hooks_AddScoreEventAfter( @WE_Report_OnScoreEvent );
-    WE_Cmds_Add( "we_report", "<userid> <reason>", "File a player report", @WE_Cmd_Report );
-    WE_Cmds_Add( "report", "<userid> <reason>", "File a player report", @WE_Cmd_Report );
+    WE_Cmds_AddEx( "we_report", "<userid> <reason>", "File a player report", false, @WE_Cmd_Report, "report" );
+    WE_Cmds_AddAlias( "report", @WE_Cmd_Report );
 }

@@ -106,6 +106,17 @@ class WE_Reply
         this.TableSet( 2, c );
     }
 
+    void TableHeader4( const String &in a, const String &in b, const String &in c,
+        const String &in d )
+    {
+        this.TableBegin( 4 );
+        this.TableAddRow();
+        this.TableSet( 0, a );
+        this.TableSet( 1, b );
+        this.TableSet( 2, c );
+        this.TableSet( 3, d );
+    }
+
     void TableHeader6( const String &in a, const String &in b, const String &in c,
         const String &in d, const String &in e, const String &in f )
     {

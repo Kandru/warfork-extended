@@ -1,11 +1,11 @@
 // Cached clan display / reserved match (refreshed when cvars change).
 String weClanCvarKey = "";
-String weClanOpDisplay = ""; // color + tag; empty = no op override
+String weClanOpDisplay = ""; // we_clan_tag (may include ^ color codes); empty = no op override
 String weClanReservedLower = "";
 
 void WE_Clan_RefreshCache()
 {
-    String key = we_clan_tag.string + "\n" + we_clan_color.string + "\n" + we_clan_reserved.string;
+    String key = we_clan_tag.string + "\n" + we_clan_reserved.string;
     if ( key == weClanCvarKey )
         return;
     weClanCvarKey = key;
@@ -14,6 +14,7 @@ void WE_Clan_RefreshCache()
     String tag = WE_Trim( we_clan_tag.string );
     if ( tag.len() > 0 )
     {
+        // Scoreboard field is a single token — drop spaces (keep ^ color codes).
         String clean = "";
         for ( uint i = 0; i < tag.len(); i++ )
         {
@@ -21,8 +22,7 @@ void WE_Clan_RefreshCache()
             if ( ch != " " && ch != "\t" )
                 clean += ch;
         }
-        if ( clean.len() > 0 )
-            weClanOpDisplay = WE_Theme_NameToColor( WE_Trim( we_clan_color.string ) ) + clean;
+        weClanOpDisplay = clean;
     }
 
     weClanReservedLower = WE_Trim( we_clan_reserved.string ).tolower();

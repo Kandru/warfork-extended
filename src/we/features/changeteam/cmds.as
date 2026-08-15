@@ -159,5 +159,5 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
 
 void WE_ChangeTeam_Register()
 {
-    WE_Cmds_Add( "we_changeteam", "<userid> <team>", "Move player to a team", @WE_Cmd_ChangeTeam );
+    WE_Cmds_Add( "we_changeteam", "<userid> <team>", "Move player to a team", true, @WE_Cmd_ChangeTeam );
 }

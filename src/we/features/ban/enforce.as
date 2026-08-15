@@ -59,7 +59,7 @@ void WE_Ban_Register()
     // we_kick stays available even when we_feature_ban is 0 (kick vs ban).
     WE_Hooks_AddThinkAfter( @WE_Ban_Think );
     WE_Hooks_AddScoreEventAfter( @WE_Ban_OnScoreEvent );
-    WE_Cmds_Add( "we_kick", "<userid> [reason]", "Kick a player", @WE_Cmd_Kick );
-    WE_Cmds_Add( "we_ban", "<userid|name|steam_id> [reason]", "Ban a player", @WE_Cmd_Ban );
-    WE_Cmds_Add( "we_unban", "[index]", "Unban a player", @WE_Cmd_Unban );
+    WE_Cmds_Add( "we_kick", "<userid> [reason]", "Kick a player", true, @WE_Cmd_Kick );
+    WE_Cmds_Add( "we_ban", "<userid|name|steam_id> [reason]", "Ban a player", true, @WE_Cmd_Ban );
+    WE_Cmds_Add( "we_unban", "[index]", "Unban a player", true, @WE_Cmd_Unban );
 }
