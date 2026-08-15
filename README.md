@@ -205,7 +205,14 @@ Sent reports are printed to stdout, for example:
 sent EU DM | Alice [TAG] reported Bob [CLAN] | 7656119… -> 7656119… | score=10 frags=8 deaths=3 suicides=1 | wallhacks
 ```
 
-GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3.
+GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3. Update an installed binary in place:
+
+```bash
+/opt/we-report-notify/we-report-notify self-update
+# systemd watcher: systemctl restart we-report-notify
+```
+
+Cron (`-cron`) picks up the new binary on the next run; a long-running systemd unit keeps the old inode until restarted.
 
 ## Extending (features)
 

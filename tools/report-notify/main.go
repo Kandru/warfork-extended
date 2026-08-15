@@ -20,6 +20,14 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags)
 
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [flags] [self-update]\n\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Commands:\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "  self-update   Download latest release binary from GitHub and replace this executable\n\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Flags:\n")
+		flag.PrintDefaults()
+	}
+
 	configPath := flag.String("config", "", "path to config.yaml (default: next to binary)")
 	cron := flag.Bool("cron", false, "read report files once, post, truncate, exit (no file watch)")
 	once := flag.Bool("once", false, "alias for -cron")
@@ -29,6 +37,22 @@ func main() {
 	if *showVersion {
 		fmt.Println(version)
 		return
+	}
+
+	args := flag.Args()
+	if len(args) > 0 {
+		switch args[0] {
+		case "self-update":
+			if len(args) > 1 {
+				log.Fatalf("self-update takes no arguments")
+			}
+			if err := runSelfUpdate(version, nil, "", ""); err != nil {
+				log.Fatalf("self-update: %v", err)
+			}
+			return
+		default:
+			log.Fatalf("unknown command %q (try -h)", args[0])
+		}
 	}
 
 	cfgPath := *configPath
