@@ -1,6 +1,6 @@
 # warfork-extended
 
-Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths). Injected AngelScript lives under `progs/gametypes/we/` (engine QPATH is 63 chars; `warfork-extended/` as a folder name truncates `.as`). Runtime data stays in `basewf/warfork-extended/`.
+Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths).
 
 ## What it does
 
