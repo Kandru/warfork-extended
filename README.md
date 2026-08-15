@@ -105,6 +105,8 @@ make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
 
 `CUSTOM_ROOT` must contain `progs/gametypes/<name>.gt` (+ `.as` extras). Filenames stay unprefixed. Put both pk3s in `basewf`.
 
+Custom GT repos (e.g. agungame) should run `make dev` only for their thin pk3. Install `gt_warfork_extended_*.pk3` via `make dev` in this repo — do not rely on a vendored copy of warfork-extended to deploy WE.
+
 Rebuild the custom pk3 when you bump WE if inject hooks / include order change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
 
 Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
