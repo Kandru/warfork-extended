@@ -73,12 +73,17 @@ void WE_Report_OnKill( Client @attackerClient, const String &args )
     if ( attackerClient.playerNum == victim.playerNum )
         return;
 
+    String body = WE_Theme_Color( "body" );
+    String accent = WE_Theme_Color( "accent" );
     WE_Print( victim,
         WE_MSG_REPORT_DEATH_HINT_PREFIX
+        + accent
+        + WE_MSG_REPORT_DEATH_HINT_CMD
         + attackerClient.playerNum
         + WE_MSG_REPORT_DEATH_HINT_REASON
+        + body
         + WE_MSG_REPORT_DEATH_HINT_SUFFIX
-        + WE_ClientDisplayName( attackerClient )
+        + attackerClient.name
         + "\n" );
 }
 
