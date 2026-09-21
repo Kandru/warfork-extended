@@ -17,7 +17,10 @@ void WE_Ban_Think()
     if ( we_feature_ban.integer != 1 )
         return;
 
-    if ( weBanNextReload < levelTime )
+    if ( weBanDirty )
+        WE_Ban_Write();
+
+    if ( !weBanDirty && weBanNextReload < levelTime )
     {
         WE_Ban_Reload();
         weBanNextReload = levelTime + WE_BAN_RELOAD_INTERVAL_MS;

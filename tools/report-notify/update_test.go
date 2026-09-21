@@ -46,6 +46,12 @@ func TestVersionNeedsUpdate(t *testing.T) {
 	}
 }
 
+func TestGithubRepoDefault(t *testing.T) {
+	if githubRepo != "kandru/warfork-extended" {
+		t.Fatalf("githubRepo=%q", githubRepo)
+	}
+}
+
 func TestAssetNameFor(t *testing.T) {
 	got := assetNameFor("linux", "amd64")
 	if got != "we-report-notify-linux-amd64" {

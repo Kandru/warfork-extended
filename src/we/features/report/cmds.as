@@ -50,7 +50,7 @@ bool WE_Cmd_Report( Client @client, const String &argsString, int argc )
 
     WE_PrintMsg( null,
         WE_MSG_REPORT_CHAT_PREFIX
-        + client.name
+        + WE_StripColors( client.name )
         + WE_MSG_REPORT_CHAT_REPORTED
         + WE_ClientDisplayName( target )
         + WE_MSG_REPORT_CHAT_FOR
@@ -83,7 +83,7 @@ void WE_Report_OnKill( Client @attackerClient, const String &args )
         + WE_MSG_REPORT_DEATH_HINT_REASON
         + body
         + WE_MSG_REPORT_DEATH_HINT_SUFFIX
-        + attackerClient.name
+        + WE_StripColors( attackerClient.name )
         + "\n" );
 }
 

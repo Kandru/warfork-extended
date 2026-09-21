@@ -21,7 +21,8 @@ void WE_Operators_RefreshCache()
         {
             if ( token.len() > 0 )
             {
-                weOperatorsNormalized += token + ",";
+                if ( WE_ValidSteamId( token ) )
+                    weOperatorsNormalized += token + ",";
                 token = "";
             }
             continue;

@@ -106,8 +106,6 @@ bool WE_Cmd_ChangeTeam( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_CHANGETEAM_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     String userTok = argsString.getToken( 0 );
     String teamTok = argsString.getToken( 1 );

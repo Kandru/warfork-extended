@@ -34,6 +34,12 @@ void WE_NickBan_Think()
         // Bots / no auth — ignore (empty steam_id).
         if ( WE_SteamId( client ).len() == 0 )
             continue;
+        if ( WE_IsOperator( client ) )
+        {
+            weNickBanLastNick[i] = name;
+            weNickBanStrikes[i] = 0;
+            continue;
+        }
 
         String last = weNickBanLastNick[i];
         if ( last.len() == 0 )
@@ -66,7 +72,7 @@ void WE_NickBan_Think()
         if ( strikes < 3 )
             continue;
 
-        WE_PrintMsg( null, WE_Theme_Prefix() + name + WE_MSG_NICKBAN_PUBLIC_MID );
+        WE_PrintMsg( null, WE_Theme_Prefix() + WE_StripColors( name ) + WE_MSG_NICKBAN_PUBLIC_MID );
         WE_Ban_Add( null, client, WE_MSG_NICKBAN_REASON );
         WE_KickClient( client, WE_MSG_NICKBAN_REASON );
         weNickBanStrikes[i] = 0;

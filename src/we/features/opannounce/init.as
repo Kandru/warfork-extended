@@ -9,7 +9,7 @@ void WE_OpAnnounce_OnScoreEvent( Client @client, const String &score_event, cons
 
     WE_PrintMsg( null,
         WE_Theme_Prefix()
-        + client.name
+        + WE_StripColors( client.name )
         + WE_Theme_Color( "accent" )
         + WE_MSG_OPANNOUNCE_SUFFIX );
 }

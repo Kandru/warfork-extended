@@ -130,25 +130,8 @@ String WE_KvFileName( const String &in name )
     String n = name;
     if ( n.len() >= 4 && n.substr( n.len() - 4, 4 ).tolower() == ".txt" )
         n = n.substr( 0, n.len() - 4 );
-    if ( n.len() == 0 )
+    if ( !WE_IsIdentName( n ) )
         return "";
-
-    const String allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
-    for ( uint i = 0; i < n.len(); i++ )
-    {
-        String ch = n.substr( i, 1 );
-        bool ok = false;
-        for ( uint j = 0; j < allowed.len(); j++ )
-        {
-            if ( allowed.substr( j, 1 ) == ch )
-            {
-                ok = true;
-                break;
-            }
-        }
-        if ( !ok )
-            return "";
-    }
     return n;
 }
 
@@ -169,7 +152,7 @@ String WE_KvFileGet( const String &in name, const String &in key )
     if ( path.len() == 0 )
         return "";
 
-    String k = WE_SanitizeField( key );
+    String k = WE_SanitizeKey( key );
     if ( k.len() == 0 )
         return "";
 
@@ -188,13 +171,14 @@ void WE_KvFileSet( const String &in name, const String &in key, const String &in
     if ( n.len() == 0 )
         return;
 
-    String k = WE_SanitizeField( key );
+    String k = WE_SanitizeKey( key );
     if ( k.len() == 0 )
         return;
 
-    String path = WE_ROOT + "kv/" + n + ".txt";
+    String path = WE_KvFilePath( n );
     String data;
-    WE_LoadFile( path, data );
+    if ( !WE_LockedLoad( path, "kv_" + n, data ) )
+        return;
     data = WE_KvSet( data, k, WE_SanitizeField( value ) );
-    WE_WriteFileLocked( path, "kv_" + n, data );
+    WE_LockedCommit( path, "kv_" + n, data );
 }

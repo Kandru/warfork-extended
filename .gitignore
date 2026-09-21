@@ -3,8 +3,9 @@ config.mk
 dist/
 idea/
 *.pk3
-scripts/__pycache__/
-scripts/inject/__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
 .tools-go/
 
 # Report-notify local runtime (keep examples only)

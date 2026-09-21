@@ -1019,7 +1019,7 @@ void WE_Awards_GrantIndex( Client @client, int index )
         if ( @selfEnt != null )
             WE_PrintMsg( selfEnt, prefix + awardMsg + "\n" );
 
-        String others = prefix + client.name + WE_MSG_AWARD_CHAT_GOT
+        String others = prefix + WE_StripColors( client.name ) + WE_MSG_AWARD_CHAT_GOT
                         + S_COLOR_YELLOW + title
                         + S_COLOR_YELLOW + " (x" + count + ")\n";
         for ( int i = 0; i < maxClients; i++ )
@@ -1121,10 +1121,12 @@ bool WE_Awards_RemoveIndex( Client @client, int index )
         String path = WE_UserPath( steamid );
         if ( path.len() == 0 )
             return false;
+        String lockName = "user_" + steamid;
         String data;
-        WE_LoadFile( path, data );
+        if ( !WE_LockedLoad( path, lockName, data ) )
+            return false;
         data = WE_KvDelete( data, key );
-        WE_WriteFileLocked( path, "user_" + steamid, data );
+        WE_LockedCommit( path, lockName, data );
         count = 0;
     }
     else

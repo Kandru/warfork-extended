@@ -16,7 +16,7 @@ void WE_Welcome_OnEnterGame( Client @client )
     WE_PrintMsg( ent,
         WE_Theme_Prefix()
         + WE_MSG_WELCOME_HEY
-        + client.name
+        + WE_StripColors( client.name )
         + body
         + WE_MSG_WELCOME_TYPE
         + accent

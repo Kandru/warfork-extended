@@ -61,6 +61,8 @@ bool WE_Cmds_Dispatch( Client @client, const String &cmdString, const String &ar
             continue;
         if ( @weCmdHandlers[i] == null )
             return true;
+        if ( weCmdOperatorOnly[i] && !WE_RequireOperator( client ) )
+            return true;
         return weCmdHandlers[i]( client, argsString, argc );
     }
     return false;

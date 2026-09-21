@@ -6,7 +6,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 
 - Injects hooks around engine `GT_*` callbacks
 - Stores data in `basewf/warfork-extended/*`
-- SteamID-based player identity
+- SteamID-based player identity (SteamID64, 17 digits; anything else is ignored on disk)
 - Operators via engine `op <password>` **or** SteamIDs in `we_operators` (always on when `we_enabled` is 1)
 - Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
 - Player reports (`we_report` / `report` → `report.txt`)
@@ -22,9 +22,9 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 A client is an operator if **either**:
 
 1. They authenticated with the engine `op <password>` command (`client.isOperator`), or
-2. Their SteamID64 is listed in `we_operators` (comma-separated; spaces/tabs OK)
+2. Their SteamID64 (17 digits) is listed in `we_operators` (comma-separated; spaces/tabs OK)
 
-Listed SteamIDs get `client.isOperator` set on join / userinfo change so custom gametypes that still check the engine flag keep working. Prefer `WE_IsOperator` / `WE_RequireOperator` in new code (see [development.md](development.md)).
+Listed SteamIDs get `client.isOperator` set on join / userinfo change so custom gametypes that still check the engine flag keep working. Registered `WE_Cmds_Add(..., true, ...)` commands are gated in dispatch; use `WE_IsOperator` / `WE_RequireOperator` for other checks (see [development.md](development.md)).
 
 ## Commands
 
@@ -75,8 +75,8 @@ Listed SteamIDs get `client.isOperator` set on join / userinfo change so custom 
 ## Requirements
 
 - Linux
-- `python3`, `zip`, `make` (and `mv`/`cp` via coreutils)
-- `docker` (only for `make go` / `make go-release` / `make go-install`; container runs as your UID/GID). Host `go` 1.22+: `GO_DOCKER=0`
+- `make`, `zip`, `docker` (and `mv`/`cp` via coreutils)
+- Python and Go run **only** in Docker (`PY_IMAGE` / `GO_IMAGE`; container UID/GID = yours)
 
 ## Build
 
@@ -86,9 +86,10 @@ cp config.mk.example config.mk
 # edit WARFORK_BASEWF=/path/to/basewf
 
 make          # help
+make test     # Docker: Python tests, Go tests, prod pk3 smoke
 make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3 (stock GTs + WE only)
 make dev      # debug inject + copy pk3 into WARFORK_BASEWF
-make go       # dist/go/we-report-notify via Docker Go (GO_DOCKER=0 for host go)
+make go       # dist/go/we-report-notify via Docker Go
 make go-install  # install binary + example config to /opt/we-report-notify
 ```
 
@@ -119,7 +120,7 @@ Paste cvars into your `server.cfg` (full annotated copy: [`configs/warfork-exten
 |------|---------|-------|
 | `we_enabled` | `1` | Master switch |
 | `we_debug` | `0` | Extra `G_Print` on most `GT_*` wrappers (not `GT_ThinkRules`) |
-| `we_operators` | `""` | Comma-separated SteamID64 ops (always on with `we_enabled`) |
+| `we_operators` | `""` | Comma-separated SteamID64 ops (17 digits; always on with `we_enabled`) |
 | `we_feature_*` | see table above | Feature toggles |
 | `we_clan_tag` | `""` | Scoreboard tag for operators when clan feature is on (`^` colors allowed) |
 | `we_clan_reserved` | `""` | Tag non-ops may not display |
@@ -235,7 +236,7 @@ Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerD
 ## Version / releases
 
 - Bump [`VERSION`](VERSION) (semver).
-- Pushing a change to `VERSION` on `main` runs GitHub Actions: build prod pk3 + Linux `we-report-notify` binary, then a GitHub Release with both assets and commits since the previous tag.
+- Pushing a change to `VERSION` on `main` runs GitHub Actions: `make test`, Linux `we-report-notify` binary, then a GitHub Release with both assets and commits since the previous tag. See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Screenshots
 

@@ -12,7 +12,8 @@ import (
 	"time"
 )
 
-const githubRepo = "kandru/warfork-extended"
+// Set via -ldflags "-X main.githubRepo=..."
+var githubRepo = "kandru/warfork-extended"
 
 type githubRelease struct {
 	TagName string        `json:"tag_name"`
@@ -138,8 +139,8 @@ func resolveExecutable() (string, error) {
 	return filepath.EvalSymlinks(exe)
 }
 
-// runSelfUpdate fetches the latest release from kandru/warfork-extended and
-// replaces the current binary when a newer (or different) version is available.
+// runSelfUpdate fetches the latest release from githubRepo (kandru/warfork-extended)
+// and replaces the current binary when a newer (or different) version is available.
 // client/apiBase/exePath are optional overrides for tests (nil / "" = production).
 func runSelfUpdate(localVersion string, client *http.Client, apiBase, exePath string) error {
 	if client == nil {

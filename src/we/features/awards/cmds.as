@@ -124,8 +124,6 @@ bool WE_Cmd_AwardGive( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_AWARDS_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_AWARD_GIVE_USAGE, true, true );
     if ( @target == null )
@@ -163,8 +161,6 @@ bool WE_Cmd_AwardRemove( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_AWARDS_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_AWARD_REMOVE_USAGE, true, true );
     if ( @target == null )

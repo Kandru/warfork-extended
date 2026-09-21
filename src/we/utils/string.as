@@ -5,6 +5,7 @@ const int WE_MATCH_AMBIGUOUS = 3;
 
 // printMessage / G_PrintMsg truncate around MAX_STRING_CHARS (1024).
 const uint WE_PRINT_MAX = 1000;
+const String WE_IDENT_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-";
 
 uint WE_Print_Take( const String &in msg, uint pos, uint room )
 {
@@ -75,6 +76,42 @@ String WE_StripColors( const String &in text )
     return text.removeColorTokens();
 }
 
+bool WE_CharInSet( const String &in ch, const String &in allowed )
+{
+    if ( ch.len() != 1 )
+        return false;
+    for ( uint i = 0; i < allowed.len(); i++ )
+    {
+        if ( allowed.substr( i, 1 ) == ch )
+            return true;
+    }
+    return false;
+}
+
+bool WE_ValidSteamId( const String &in steamid )
+{
+    if ( steamid.len() != 17 )
+        return false;
+    for ( uint i = 0; i < 17; i++ )
+    {
+        if ( !WE_CharInSet( steamid.substr( i, 1 ), "0123456789" ) )
+            return false;
+    }
+    return true;
+}
+
+bool WE_IsIdentName( const String &in name )
+{
+    if ( name.len() == 0 )
+        return false;
+    for ( uint i = 0; i < name.len(); i++ )
+    {
+        if ( !WE_CharInSet( name.substr( i, 1 ), WE_IDENT_CHARS ) )
+            return false;
+    }
+    return true;
+}
+
 String WE_SanitizeField( const String &in text )
 {
     String result = "";
@@ -84,6 +121,18 @@ String WE_SanitizeField( const String &in text )
         if ( ch == "," || ch == "\n" || ch == "\r" || ch == "\t" )
             result += " ";
         else
+            result += ch;
+    }
+    return result;
+}
+
+String WE_SanitizeKey( const String &in text )
+{
+    String result = "";
+    for ( uint i = 0; i < text.len(); i++ )
+    {
+        String ch = text.substr( i, 1 );
+        if ( WE_CharInSet( ch, WE_IDENT_CHARS ) )
             result += ch;
     }
     return result;
@@ -106,16 +155,7 @@ String WE_JoinArgs( const String &in argsString, int startToken, int argc )
 
 bool WE_IsAlnumOrSpace( const String &in ch )
 {
-    if ( ch.len() != 1 )
-        return false;
-
-    const String allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
-    for ( uint i = 0; i < allowed.len(); i++ )
-    {
-        if ( allowed.substr( i, 1 ) == ch )
-            return true;
-    }
-    return false;
+    return WE_CharInSet( ch, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz " );
 }
 
 String WE_SanitizeReason( const String &in text )

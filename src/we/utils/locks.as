@@ -4,6 +4,7 @@
 
 const String WE_LOCKS_PATH = "warfork-extended/locks.txt";
 const uint WE_LOCK_TTL_SEC = 1;
+const uint WE_LOCK_FUTURE_SKEW_SEC = 2;
 
 Cvar we_net_ip( "net_ip", "", 0 );
 Cvar we_net_port( "net_port", "44400", 0 );
@@ -44,7 +45,7 @@ bool WE_Locks_IsActive( uint lockedAt, uint nowSec )
     if ( lockedAt == 0 )
         return false;
     if ( nowSec < lockedAt )
-        return true;
+        return ( lockedAt - nowSec ) <= WE_LOCK_FUTURE_SKEW_SEC;
     return ( nowSec - lockedAt ) < WE_LOCK_TTL_SEC;
 }
 
@@ -108,7 +109,7 @@ bool WE_Locks_Find( const String &in data, const String &in name, uint &out lock
 
 bool WE_TryLock( const String &in name )
 {
-    if ( name.len() == 0 )
+    if ( !WE_IsIdentName( name ) )
         return false;
 
     uint nowSec = WE_UnixSeconds();
@@ -132,7 +133,7 @@ bool WE_TryLock( const String &in name )
 
 void WE_Unlock( const String &in name )
 {
-    if ( name.len() == 0 )
+    if ( !WE_IsIdentName( name ) )
         return;
 
     uint nowSec = WE_UnixSeconds();
@@ -145,8 +146,6 @@ void WE_Unlock( const String &in name )
 // Reads (WE_LoadFile) never lock. Use this for all shared data writes.
 bool WE_WriteFileLocked( const String &in path, const String &in lockName, const String &in content )
 {
-    if ( lockName.len() == 0 )
-        return false;
     if ( !WE_TryLock( lockName ) )
         return false;
     WE_WriteFile( path, content );
@@ -157,13 +156,27 @@ bool WE_WriteFileLocked( const String &in path, const String &in lockName, const
 // Append under soft lock (log-style files).
 bool WE_AppendFileLocked( const String &in path, const String &in lockName, const String &in content )
 {
-    if ( lockName.len() == 0 )
-        return false;
     if ( !WE_TryLock( lockName ) )
         return false;
     G_AppendToFile( path, content );
     WE_Unlock( lockName );
     return true;
+}
+
+// Lock, then load. Caller must WE_LockedCommit (lock TTL is 1s).
+bool WE_LockedLoad( const String &in path, const String &in lockName, String &out data )
+{
+    data = "";
+    if ( !WE_TryLock( lockName ) )
+        return false;
+    WE_LoadFile( path, data );
+    return true;
+}
+
+void WE_LockedCommit( const String &in path, const String &in lockName, const String &in data )
+{
+    WE_WriteFile( path, data );
+    WE_Unlock( lockName );
 }
 
 void WE_Locks_ReleaseAll()

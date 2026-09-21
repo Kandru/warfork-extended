@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Thin entrypoint — implementation lives in scripts/inject/."""
+"""Thin entrypoint — implementation lives in scripts/inject/. Invoked via make (Docker)."""
 
 from __future__ import annotations
 

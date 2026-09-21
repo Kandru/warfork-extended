@@ -168,8 +168,6 @@ bool WE_Cmd_WeaponGive( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = null;
     Item @item = null;
@@ -192,8 +190,6 @@ bool WE_Cmd_WeaponRemove( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = null;
     Item @item = null;
@@ -236,8 +232,6 @@ bool WE_Cmd_WeaponStrip( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_WEAPON_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_WEAPON_STRIP_USAGE, true, true );
     if ( @target == null )

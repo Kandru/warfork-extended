@@ -46,8 +46,8 @@ jobs:
       - name: Install zip
         run: sudo apt-get update && sudo apt-get install -y zip
 
-      - name: Build prod pk3
-        run: make prod
+      - name: Test
+        run: make test
 
       - name: Build report-notify (linux amd64)
         run: make go-release

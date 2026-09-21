@@ -7,7 +7,7 @@ String WE_PlayerDataKey( const String &in key )
     if ( key.len() == 0 )
         return "";
 
-    String k = WE_SanitizeField( key );
+    String k = WE_SanitizeKey( key );
     if ( k.len() == 0 )
         return "";
 
@@ -26,7 +26,7 @@ String WE_GetPlayerDataBySteamId( const String &in steamid, const String &in key
 {
     if ( !WE_PlayerDataEnabled() )
         return "";
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return "";
 
     String k = WE_PlayerDataKey( key );
@@ -39,7 +39,7 @@ void WE_SetPlayerDataBySteamId( const String &in steamid, const String &in key, 
 {
     if ( !WE_PlayerDataEnabled() )
         return;
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return;
 
     String k = WE_PlayerDataKey( key );

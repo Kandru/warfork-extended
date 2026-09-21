@@ -36,8 +36,6 @@ bool WE_Cmd_Help( Client @client, const String &argsString, int argc )
 
 bool WE_Cmd_Users( Client @client, const String &argsString, int argc )
 {
-    if ( !WE_RequireOperator( client ) )
-        return true;
     WE_Reply reply;
     WE_Reply_AddPlayers( reply, true, true );
     reply.Send( client );

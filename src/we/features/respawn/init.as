@@ -5,8 +5,6 @@ bool WE_Cmd_Respawn( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_RESPAWN_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_RESPAWN_USAGE, true, true );
     if ( @target == null )

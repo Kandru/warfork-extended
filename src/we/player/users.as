@@ -12,7 +12,7 @@ int weRecentAddCount = 0;
 
 String WE_UserPath( const String &in steamid )
 {
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return "";
     return WE_ROOT + "users/" + steamid + ".txt";
 }
@@ -48,10 +48,12 @@ void WE_UserSet( const String &in steamid, const String &in key, const String &i
     if ( path.len() == 0 )
         return;
 
+    String lockName = "user_" + steamid;
     String data;
-    WE_LoadFile( path, data );
+    if ( !WE_LockedLoad( path, lockName, data ) )
+        return;
     data = WE_KvSet( data, key, WE_SanitizeField( value ) );
-    WE_WriteFileLocked( path, "user_" + steamid, data );
+    WE_LockedCommit( path, lockName, data );
 }
 
 uint WE_UserLeaveUnixFromData( const String &in data )
@@ -100,8 +102,10 @@ void WE_UserStamp( Client @client, bool connected )
         return;
 
     String path = WE_UserPath( steamid );
+    String lockName = "user_" + steamid;
     String data;
-    WE_LoadFile( path, data );
+    if ( !WE_LockedLoad( path, lockName, data ) )
+        return;
 
     String snapshot;
     WE_SnapshotUserInfo( client, snapshot );
@@ -117,7 +121,7 @@ void WE_UserStamp( Client @client, bool connected )
         data = WE_KvSet( data, "last_disconnected", WE_HumanTimeNow() );
         data = WE_KvSet( data, "last_disconnected_unix", WE_UnixTimestamp() );
     }
-    WE_WriteFileLocked( path, "user_" + steamid, data );
+    WE_LockedCommit( path, lockName, data );
 }
 
 void WE_UserTouchConnected( Client @client )
@@ -147,7 +151,8 @@ void WE_RecentDisconnects_ParseIntoWork( const String &in data )
     uint pos = 0;
     while ( WE_NextLine( data, pos, line, pos ) )
     {
-        if ( line.len() == 0 )
+        line = WE_Trim( line );
+        if ( !WE_ValidSteamId( line ) )
             continue;
         if ( weRecentCount >= WE_RECENT_WORK_MAX )
             break;
@@ -212,7 +217,7 @@ bool WE_RecentDisconnects_MergeAddBuffer( bool stampedNow )
     for ( int i = 0; i < weRecentAddCount; i++ )
     {
         String steamid = weRecentAddIds[i];
-        if ( steamid.len() == 0 )
+        if ( !WE_ValidSteamId( steamid ) )
             continue;
         if ( WE_RecentDisconnects_WorkContains( steamid ) )
             continue;
@@ -251,7 +256,7 @@ bool WE_RecentDisconnects_MergeAddBuffer( bool stampedNow )
 
 bool WE_RecentDisconnects_MergeOne( const String &in steamid )
 {
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return false;
     weRecentAddCount = 1;
     weRecentAddIds[0] = steamid;
@@ -273,7 +278,7 @@ void WE_UserTouchDisconnected( Client @client )
 
 bool WE_RecentDisconnects_IsKnown( const String &in steamid )
 {
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return false;
     if ( WE_UserExists( steamid ) )
         return true;

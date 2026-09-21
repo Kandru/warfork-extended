@@ -1,8 +1,5 @@
 bool WE_Cmd_Kick( Client @client, const String &argsString, int argc )
 {
-    if ( !WE_RequireOperator( client ) )
-        return true;
-
     Client @target = @WE_ClientFromArg( client, argsString, WE_MSG_KICK_USAGE, true, false );
     if ( @target == null )
         return true;
@@ -37,6 +34,12 @@ void WE_Cmd_Ban_PrintTargets( Client @client )
 
 bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const String &in reason )
 {
+    if ( !WE_ValidSteamId( steamid ) )
+    {
+        WE_Print( client, WE_MSG_BAN_NO_STEAM );
+        return true;
+    }
+
     String actorSteam = WE_SteamId( client );
     if ( actorSteam.len() > 0 && actorSteam == steamid )
     {
@@ -53,7 +56,7 @@ bool WE_Cmd_Ban_ApplySteam( Client @client, const String &in steamid, const Stri
         clan = WE_KvGet( data, "clan" );
     }
 
-    WE_Ban_Reload();
+    WE_Ban_SyncFromDisk();
     if ( !WE_Ban_AddSteam( client, steamid, name, clan, reason ) )
     {
         WE_Print( client, WE_MSG_BAN_FULL );
@@ -81,7 +84,7 @@ bool WE_Cmd_Ban_ApplyClient( Client @client, Client @target, const String &in re
         return true;
     }
 
-    WE_Ban_Reload();
+    WE_Ban_SyncFromDisk();
     if ( !WE_Ban_Add( client, target, reason ) )
     {
         WE_Print( client, WE_MSG_BAN_FULL );
@@ -101,8 +104,6 @@ bool WE_Cmd_Ban( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_BAN_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
     String query = argsString.getToken( 0 );
     if ( query.len() == 0 )
@@ -193,10 +194,8 @@ bool WE_Cmd_Unban( Client @client, const String &argsString, int argc )
         WE_Print( client, WE_MSG_BAN_DISABLED );
         return true;
     }
-    if ( !WE_RequireOperator( client ) )
-        return true;
 
-    WE_Ban_Reload();
+    WE_Ban_SyncFromDisk();
     if ( argsString == "" || !argsString.getToken( 0 ).isNumerical() )
     {
         WE_Reply reply;

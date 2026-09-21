@@ -59,7 +59,7 @@ make prod INCLUDE_CUSTOM=1
 ```
 
 WE AngelScript is listed **before** your gametype scripts in the `.gt` include list, so you can call WE APIs from your `.as` files directly.
-Identity is always **SteamID**. Clients without `steam_id` (e.g. bots) are ignored by user APIs.
+Identity is always **SteamID64** (17 digits). Clients without a valid `steam_id` (e.g. bots) are ignored by user APIs. Keys stored via `WE_SetPlayerData` are forced to `cust_*` (`[A-Za-z0-9_]` after sanitize).
 
 ## Per-player key/value storage
 
@@ -259,7 +259,7 @@ Theme file `basewf/warfork-extended/theme.txt` (see `configs/theme.txt.example`)
 |----------|--------|
 | `WE_SteamId( client )` | SteamID64 string, or "" |
 | `WE_IsOperator( client )` | Engine `op` / `client.isOperator`, or SteamID in `we_operators` |
-| `WE_RequireOperator( client )` | Gate + deny message; prefer over raw `client.isOperator` |
+| `WE_RequireOperator( client )` | Gate + deny message. Registered cmds with `requiresOperator=true` are already gated in `WE_Cmds_Dispatch`. |
 | `WE_ScoreboardClan( client )` | Clan column when `we_feature_clan` is on (ops / reserved tag) |
 | `WE_StripColors( text )` | Name without color codes |
 | `WE_FindClient( query, includeSpectators )` | Resolve slot or unique name fragment; null if missing/ambiguous |

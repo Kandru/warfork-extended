@@ -11,6 +11,7 @@ String[] weBanBySteamId( WE_MAX_BANS );
 String[] weBanReason( WE_MAX_BANS );
 int weBanCount = 0;
 uint weBanNextReload = 0;
+bool weBanDirty = false;
 
 void WE_Ban_Clear()
 {
@@ -70,7 +71,7 @@ bool WE_Ban_ParseLine( const String &in line )
         cur = "";
     }
 
-    if ( f1.len() == 0 )
+    if ( !WE_ValidSteamId( f1 ) )
         return false;
 
     weBanUnix[weBanCount] = f0;
@@ -103,12 +104,12 @@ void WE_Ban_Reload()
     }
 }
 
-void WE_Ban_Write()
+bool WE_Ban_Write()
 {
     String content = "";
     for ( int i = 0; i < weBanCount; i++ )
     {
-        if ( weBanSteamId[i].len() == 0 )
+        if ( !WE_ValidSteamId( weBanSteamId[i] ) )
             continue;
         content += weBanUnix[i]
                  + ", " + weBanSteamId[i]
@@ -119,14 +120,29 @@ void WE_Ban_Write()
                  + ", " + weBanReason[i]
                  + "\n";
     }
-    WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", content );
+    if ( !WE_WriteFileLocked( WE_BANLIST_PATH, "banlist", content ) )
+    {
+        weBanDirty = true;
+        return false;
+    }
+    weBanDirty = false;
     // Memory matches disk from this server; wait a full interval before re-reading.
     weBanNextReload = levelTime + WE_BAN_RELOAD_INTERVAL_MS;
+    return true;
+}
+
+void WE_Ban_SyncFromDisk()
+{
+    if ( weBanDirty )
+        WE_Ban_Write();
+    if ( weBanDirty )
+        return;
+    WE_Ban_Reload();
 }
 
 bool WE_Ban_IsSteamBanned( const String &in steamid )
 {
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return false;
 
     for ( int i = 0; i < weBanCount; i++ )
@@ -139,7 +155,7 @@ bool WE_Ban_IsSteamBanned( const String &in steamid )
 
 bool WE_Ban_AddSteam( Client @actor, const String &in steamid, const String &in username, const String &in clan, const String &in reason )
 {
-    if ( steamid.len() == 0 )
+    if ( !WE_ValidSteamId( steamid ) )
         return false;
     if ( WE_Ban_IsSteamBanned( steamid ) )
         return true;

@@ -105,7 +105,7 @@ bool WE_Report_Add( Client @actor, Client @target, const String &in reason )
         + ", " + reason
         + "\n";
 
-    if ( !G_AppendToFile( WE_REPORT_PATH, line ) )
+    if ( !WE_AppendFileLocked( WE_REPORT_PATH, "report", line ) )
         return false;
 
     WE_Report_MarkCooldown( actor );

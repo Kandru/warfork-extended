@@ -8,6 +8,8 @@ String WE_SteamId( Client @client )
     String steamid = client.getUserInfoKey( "steam_id" );
     if ( steamid.len() == 0 )
         steamid = client.getUserInfoKey( "steamid" );
+    if ( !WE_ValidSteamId( steamid ) )
+        return "";
     return steamid;
 }
 

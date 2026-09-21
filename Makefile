@@ -1,28 +1,27 @@
 # warfork-extended — type `make` for help
+# Toolchains (Python, Go) run in Docker. Host: make, zip, docker, coreutils.
 
 -include config.mk
 
 VERSION   := $(shell cat VERSION 2>/dev/null | tr -d '[:space:]')
-PYTHON    ?= python3
 INJECT    := scripts/inject.py
 ROOT      := $(abspath .)
 PK3_NAME  := gt_warfork_extended_$(VERSION).pk3
-GO         ?= go
-GO_DOCKER  ?= 1
-GO_IMAGE   ?= golang:1.22
+GITHUB_REPO ?= kandru/warfork-extended
+
+PY_IMAGE   ?= python:3.12-alpine
+GO_IMAGE   ?= golang:1.22-alpine
 GO_DIR     := $(ROOT)/tools/report-notify
 GO_BIN     := we-report-notify
 GO_OUT     := $(ROOT)/dist/go
 PREFIX     ?= /opt/we-report-notify
-GO_LDFLAGS := -ldflags "-X main.version=$(VERSION)"
-GO_UID     := $(shell id -u)
-GO_GID     := $(shell id -g)
+GO_LDFLAGS := -ldflags "-X main.version=$(VERSION) -X main.githubRepo=$(GITHUB_REPO)"
+DOCKER_USER := --user $(shell id -u):$(shell id -g)
+
 # Image /go is root-owned; keep cache/mod under /tmp so --user can write.
 # GO_EXTRA_ENV: extra `docker -e` flags (target-specific, e.g. go-release).
-# GO_HOST_ENV: same vars as `env KEY=val` when GO_DOCKER=0.
-ifeq ($(GO_DOCKER),1)
 GO_RUN = docker run --rm \
-	--user $(GO_UID):$(GO_GID) \
+	$(DOCKER_USER) \
 	-e HOME=/tmp \
 	-e GOCACHE=/tmp/go-cache \
 	-e GOMODCACHE=/tmp/go-mod \
@@ -32,9 +31,21 @@ GO_RUN = docker run --rm \
 	-w "$(GO_DIR)" \
 	$(GO_IMAGE) \
 	go
-else
-GO_RUN = cd "$(GO_DIR)" && env $(GO_HOST_ENV) $(GO)
+
+PY_MOUNTS := -v "$(ROOT):$(ROOT)"
+ifdef CUSTOM_ROOT
+PY_MOUNTS += -v "$(abspath $(CUSTOM_ROOT)):$(abspath $(CUSTOM_ROOT))"
 endif
+
+PY_RUN = docker run --rm \
+	$(DOCKER_USER) \
+	-e HOME=/tmp \
+	-e PYTHONDONTWRITEBYTECODE=1 \
+	-e PYTHONPATH=$(ROOT)/scripts \
+	$(PY_MOUNTS) \
+	-w "$(ROOT)" \
+	$(PY_IMAGE) \
+	python3
 
 # Optional: overlay gamemodes/custom (or CUSTOM_ROOT) into the WE pk3 for local debug.
 INCLUDE_CUSTOM ?= 0
@@ -43,17 +54,19 @@ MODE ?= prod
 
 .DEFAULT_GOAL := help
 
-.PHONY: help dev prod clean inject-dev inject-prod pack-dev pack-prod install-dev custom go go-release go-install
+.PHONY: help dev prod clean inject-dev inject-prod pack-dev pack-prod install-dev custom \
+	go go-release go-install test test-py test-go test-pk3
 
 help:
 	@echo "warfork-extended $(VERSION)"
 	@echo ""
 	@echo "Targets:"
 	@echo "  make help        Show this help (default)"
+	@echo "  make test        Python + Go tests, then prod pk3 smoke (Docker)"
 	@echo "  make dev         Inject (debug), pack pk3, copy to WARFORK_BASEWF"
 	@echo "  make prod        Inject (prod), pack pk3 under dist/prod/"
 	@echo "  make custom CUSTOM_ROOT=<gt-repo> PK3=<out.pk3>  Thin custom-GT pk3"
-	@echo "  make go          Build report-notify binary -> dist/go/ (Docker Go by default)"
+	@echo "  make go          Build report-notify binary -> dist/go/"
 	@echo "  make go-release  Linux amd64 report-notify (CI / release asset)"
 	@echo "  make go-install  Install binary + example config to PREFIX"
 	@echo "  make clean       Remove dist/ and local *.pk3"
@@ -62,11 +75,12 @@ help:
 	@echo "  INCLUDE_CUSTOM=1  Overlay gamemodes/custom (or CUSTOM_ROOT) into WE pk3"
 	@echo "  MODE=prod|debug   Inject mode for make custom (default: prod)"
 	@echo "  PREFIX=$(PREFIX)  Install path for make go-install"
-	@echo "  GO_DOCKER=0       Use host $(GO) instead of $(GO_IMAGE)"
-	@echo "  GO_IMAGE=$(GO_IMAGE)  Image when GO_DOCKER=1"
+	@echo "  PY_IMAGE=$(PY_IMAGE)"
+	@echo "  GO_IMAGE=$(GO_IMAGE)"
 	@echo ""
 	@echo "Config: copy config.mk.example -> config.mk"
 	@echo "  WARFORK_BASEWF=$(WARFORK_BASEWF)"
+	@echo "Python and Go always run in Docker. Host needs make, zip, docker."
 
 INJECT_EXTRA :=
 ifeq ($(INCLUDE_CUSTOM),1)
@@ -77,10 +91,10 @@ endif
 endif
 
 inject-dev:
-	$(PYTHON) $(INJECT) --mode debug --root $(ROOT) --out $(ROOT)/dist/debug $(INJECT_EXTRA)
+	$(PY_RUN) $(INJECT) --mode debug --root $(ROOT) --out $(ROOT)/dist/debug $(INJECT_EXTRA)
 
 inject-prod:
-	$(PYTHON) $(INJECT) --mode prod --root $(ROOT) --out $(ROOT)/dist/prod $(INJECT_EXTRA)
+	$(PY_RUN) $(INJECT) --mode prod --root $(ROOT) --out $(ROOT)/dist/prod $(INJECT_EXTRA)
 
 pack-dev: inject-dev
 	@rm -f $(ROOT)/dist/debug/$(PK3_NAME)
@@ -114,7 +128,7 @@ ifndef PK3
 	$(error PK3 not set. Example: make custom CUSTOM_ROOT=/path/to/my-gt PK3=/path/to/gt_mygt.pk3)
 endif
 	@case "$(MODE)" in prod|debug) ;; *) echo "MODE must be prod or debug (got: $(MODE))"; exit 1 ;; esac
-	$(PYTHON) $(INJECT) --mode $(MODE) --root $(ROOT) \
+	$(PY_RUN) $(INJECT) --mode $(MODE) --root $(ROOT) \
 		--custom-root "$(CUSTOM_ROOT)" --out $(ROOT)/dist/custom
 	@mkdir -p "$$(dirname "$(PK3)")"
 	@rm -f "$(PK3)"
@@ -122,13 +136,24 @@ endif
 		cd $(ROOT)/dist/custom && zip -r "$$abs_pk3" progs
 	@echo "Built $(PK3) (MODE=$(MODE); requires WE pk3 on server)"
 
+test-py:
+	$(PY_RUN) -m unittest discover -s tests -p 'test_*.py' -v
+
+test-go:
+	$(GO_RUN) test ./...
+	$(GO_RUN) vet ./...
+
+test-pk3: pack-prod
+	$(PY_RUN) tests/pk3_smoke.py $(ROOT)/dist/prod/$(PK3_NAME)
+
+test: test-py test-go test-pk3
+
 go:
 	@mkdir -p "$(GO_OUT)"
 	$(GO_RUN) build $(GO_LDFLAGS) -o "$(GO_OUT)/$(GO_BIN)" .
 	@echo "Built $(GO_OUT)/$(GO_BIN)"
 
 go-release: GO_EXTRA_ENV = -e CGO_ENABLED=0 -e GOOS=linux -e GOARCH=amd64
-go-release: GO_HOST_ENV = CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 go-release:
 	@mkdir -p "$(GO_OUT)"
 	$(GO_RUN) build $(GO_LDFLAGS) -o "$(GO_OUT)/$(GO_BIN)-linux-amd64" .
