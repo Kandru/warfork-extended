@@ -152,3 +152,19 @@ def we_ban_parse_line(line: str) -> list[str] | None:
     if not we_valid_steam_id(fields[1]):
         return None
     return fields
+
+
+def we_startmap_filter_list(raw: str, installed: set[str]) -> list[str]:
+    """Ident tokens in installed, first-seen order, case-insensitive dedupe."""
+    want = {m.lower() for m in installed}
+    seen: set[str] = set()
+    out: list[str] = []
+    for tok in raw.split():
+        if not we_is_ident_name(tok):
+            continue
+        key = tok.lower()
+        if key not in want or key in seen:
+            continue
+        seen.add(key)
+        out.append(tok)
+    return out

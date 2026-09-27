@@ -14,6 +14,7 @@ from spec import (
     we_sanitize_field,
     we_sanitize_key,
     we_sanitize_reason,
+    we_startmap_filter_list,
     we_valid_steam_id,
 )
 
@@ -108,6 +109,18 @@ class TestBanCsv(unittest.TestCase):
         self.assertIsNone(we_ban_parse_line("name=unix@ip:port"))
         self.assertIsNone(we_ban_parse_line("1, ../theme, n, c, by, bys, r"))
         self.assertIsNone(we_ban_parse_line(""))
+
+
+class TestStartmapFilter(unittest.TestCase):
+    def test_filter(self):
+        installed = {"wfdm1", "wfdm2", "wfdm3"}
+        self.assertEqual(
+            we_startmap_filter_list("wfdm1 ../x wfdm2 wfdm1 WFDM3 missing", installed),
+            ["wfdm1", "wfdm2", "WFDM3"],
+        )
+        self.assertEqual(we_startmap_filter_list("wfdm1 wfdm2", installed), ["wfdm1", "wfdm2"])
+        self.assertEqual(we_startmap_filter_list("", installed), [])
+        self.assertEqual(we_startmap_filter_list("a/b foo=bar", {"a/b", "foo=bar"}), [])
 
 
 if __name__ == "__main__":

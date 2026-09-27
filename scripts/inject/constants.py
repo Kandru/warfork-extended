@@ -97,6 +97,7 @@ WE_MODULES = (
     "features/opannounce/init.as",
     "features/clan/init.as",
     "features/nickban/init.as",
+    "features/startmap/init.as",
     "core/core_cmds.as",
     "core/main.as",
 )

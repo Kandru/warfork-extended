@@ -27,6 +27,10 @@ set we_feature_welcome "1"
 // [WE] <name> is an operator — on enterGame for operators
 set we_feature_opannounce "1"
 
+// Once per server process: random installed map from g_maplist (or we_startmap_list).
+set we_feature_startmap "1"
+set we_startmap_list ""
+
 // Scoreboard clan override (default off until tag/reserved are set)
 // Operators: we_clan_tag (put ^ color codes in the tag, e.g. ^1Kandru)
 // Non-ops matching we_clan_reserved (color-stripped, case-insensitive): "-"

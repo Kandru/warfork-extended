@@ -17,3 +17,6 @@ Cvar we_feature_clan( "we_feature_clan", "0", 0 );
 Cvar we_clan_tag( "we_clan_tag", "", 0 );
 Cvar we_clan_reserved( "we_clan_reserved", "", 0 );
 Cvar we_feature_nickban( "we_feature_nickban", "0", 0 );
+Cvar we_feature_startmap( "we_feature_startmap", "1", 0 );
+Cvar we_startmap_list( "we_startmap_list", "", 0 );
+Cvar we_startmap_done( "we_startmap_done", "0", 0 );

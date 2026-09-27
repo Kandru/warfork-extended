@@ -99,3 +99,6 @@ const String WE_MSG_NICKBAN_REASON = "name change spam";
 
 const String WE_MSG_INIT_PREFIX = "warfork-extended ";
 const String WE_MSG_INIT_SUFFIX = " initialized\n";
+
+const String WE_MSG_STARTMAP_NONE = "startmap: no installed maps in list\n";
+const String WE_MSG_STARTMAP_PREFIX = "startmap: ";

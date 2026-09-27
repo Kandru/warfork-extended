@@ -21,6 +21,7 @@ void WE_Init()
     WE_OpAnnounce_Register();
     WE_Clan_Register();
     WE_NickBan_Register();
+    WE_Startmap_Register();
 }
 
 void WE_Init_After()

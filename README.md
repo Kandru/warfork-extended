@@ -14,6 +14,7 @@ Modular operator framework for [Warfork](https://warfork.com) gameservers. It wr
 - Operator join announce (`we_feature_opannounce`)
 - Scoreboard clan override (`we_feature_clan`)
 - Nick-change spam auto-ban (`we_feature_nickban`)
+- Random map on server process start (`we_feature_startmap`; optional `we_startmap_list`)
 - Custom awards (`award_*` counters with every/map/round/once frequency, `we_awards` / `we_awardGive` / `we_awardRemove`)
 - Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
 
@@ -60,6 +61,7 @@ Listed SteamIDs get `client.isOperator` set on join / userinfo change so custom 
 | `we_feature_clan` | `0` | Rewrite scoreboard clan column (see clan cvars below) |
 | `we_feature_nickban` | `0` | Warn, then ban+kick players who change name too often while playing (`name change spam`) |
 | `we_feature_welcome` | `1` | Chat tip pointing new players at `we_help` |
+| `we_feature_startmap` | `1` | On server process start, change once to a random installed map from `g_maplist` (or `we_startmap_list` when set) |
 | `we_feature_ban` / `weapon` / `respawn` / `changeteam` / `awards` / `report` | `1` | Gate the matching command groups |
 
 ### Clan override (`we_feature_clan 1`)
@@ -122,6 +124,7 @@ Paste cvars into your `server.cfg` (full annotated copy: [`configs/warfork-exten
 | `we_debug` | `0` | Extra `G_Print` on most `GT_*` wrappers (not `GT_ThinkRules`) |
 | `we_operators` | `""` | Comma-separated SteamID64 ops (17 digits; always on with `we_enabled`) |
 | `we_feature_*` | see table above | Feature toggles |
+| `we_startmap_list` | `""` | Space-separated maps for startup pick; when non-empty, ignores `g_maplist` for that pick only |
 | `we_clan_tag` | `""` | Scoreboard tag for operators when clan feature is on (`^` colors allowed) |
 | `we_clan_reserved` | `""` | Tag non-ops may not display |
 | `we_awards_center_message` / `we_awards_chat_message` | `1` | Award announcement channels |
@@ -142,6 +145,8 @@ set we_awards_chat_message "1"
 set we_feature_report "1"
 set we_feature_welcome "1"
 set we_feature_opannounce "1"
+set we_feature_startmap "1"
+set we_startmap_list ""
 set we_feature_clan "0"
 set we_clan_tag "^1Kandru"
 set we_clan_reserved "kandru"
