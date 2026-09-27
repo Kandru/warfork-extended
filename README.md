@@ -1,140 +1,100 @@
-# warfork-extended
+# Warfork Extended
 
-Modular operator framework for [Warfork](https://warfork.com) gameservers. It wraps stock (and your custom) gametype scripts at **build time** to allow additional features to be added. The build produces a pk3 with `we_`-prefixed default gametype files (no collision with stock pk3 paths).
+Extra tools for a [Warfork](https://warfork.com) gameserver: admin commands, awards, and player reports.
 
-## What it does
+[Releases](https://github.com/derkalle4/warfork-extended/releases) · [License](LICENSE)
 
-- Injects hooks around engine `GT_*` callbacks
-- Stores data in `basewf/warfork-extended/*`
-- SteamID-based player identity (SteamID64, 17 digits; anything else is ignored on disk)
-- Operators via engine `op <password>` **or** SteamIDs in `we_operators` (always on when `we_enabled` is 1)
-- Operator tools: kick, ban/unban, give/remove/strip weapons, respawn, change team
-- Player reports (`we_report` / `report` → `report.txt`)
-- Join tip in chat pointing players at `we_help` (`we_feature_welcome`)
-- Operator join announce (`we_feature_opannounce`)
-- Scoreboard clan override (`we_feature_clan`)
-- Nick-change spam auto-ban (`we_feature_nickban`)
-- Random map on server process start (`we_feature_startmap`; optional `we_startmap_list`)
-- Custom awards (`award_*` counters with every/map/round/once frequency, `we_awards` / `we_awardGive` / `we_awardRemove`)
-- Per-player key/value files with userinfo snapshot + `last_connected` / `last_disconnected`
+## What it is
 
-## Operators
+Warfork Extended adds server tools on top of the stock game modes. The server can kick and ban by Steam account, give awards, take player reports, show an admin clan tag on the scoreboard, pick a random map when the process starts, and ban players.
 
-A client is an operator if **either**:
+## Features
 
-1. They authenticated with the engine `op <password>` command (`client.isOperator`), or
-2. Their SteamID64 (17 digits) is listed in `we_operators` (comma-separated; spaces/tabs OK)
+| Feature | Default | What it does |
+|---------|---------|--------------|
+| Admin Commands | - | kick, ban, respawn, change team, set weapons, ... for server admins |
+| Awards | on | Track custom awards and show them in chat / center print |
+| Player reports | on | Players file reports; server stores them and announces in chat - an additional tool can send them to Discord |
+| Operator announcent | on | Chat line when an operator joins |
+| Random start map | on | Once per server process, load a random installed map |
+| Scoreboard clan tag | off | Operators get a fixed clan tag; reserved tag is disallowed for others |
+| Name-change ban | off | Warn, then ban players who change name too often while playing |
 
-Listed SteamIDs get `client.isOperator` set on join / userinfo change so custom gametypes that still check the engine flag keep working. Registered `WE_Cmds_Add(..., true, ...)` commands are gated in dispatch; use `WE_IsOperator` / `WE_RequireOperator` for other checks (see [development.md](development.md)).
+Additionally all admin commands include an historic list of all players (even when they left) so admins can take action even though they're offline.
 
-## Commands
+## Installation
 
-| Command | Permission | Description |
-|---------|------------|-------------|
-| `we_help` | everyone | List commands |
-| `we_awards` | everyone | List your earned awards |
-| `we_report` / `report` `<userid> <reason>` | everyone | File a player report (writes `report.txt`; announces in chat). On death, victims see a hint to report the killer. |
-| `we_users` | operator | List connected players + steam_id |
-| `we_kick <userid> [reason]` | operator | Kick a player (list if no arg) |
-| `we_ban <userid|name|steam_id> [reason]` | operator | Ban player (list if no arg) |
-| `we_unban [index]` | operator | Unban player (list if no arg) |
-| `we_weaponGive <userid> <weaponid>` | operator | Give an item (id or unique name fragment) |
-| `we_weaponRemove <userid> <weaponid>` | operator | Remove an item (id or unique name fragment) |
-| `we_weaponStrip <userid>` | operator | Remove all weapons and ammo |
-| `we_respawn <userid>` | operator | Force-respawn a player (list if no arg) |
-| `we_changeteam <userid> <team>` | operator | Move player to a team (id or name fragment) |
-| `we_awardGive <userid> <award_id>` | operator | Grant a catalog award |
-| `we_awardRemove <userid> <award_id>` | operator | Remove one count of a catalog award |
+1. Download `gt_warfork_extended_<version>.pk3` from the [latest release](https://github.com/derkalle4/warfork-extended/releases).
+2. Put it in the server `basewf` folder.
+3. Delete any older `gt_warfork_extended_*.pk3` in that folder.
+4. In the config that runs when the server is being started (e.g. `server.cfg`), set the gametype to a `we_` name. The pk3 does not replace stock names like `dm` or `bomb`; it adds:
 
-- `reason` is required for `we_report` / `report` (at least 3 characters); optional for kick/ban
-- `userid` is a player slot or a unique case-insensitive name fragment (`WE_ClientFromArg` / `WE_FindClient` in `src/we/utils/clients.as`)
-- `we_ban` with no/unknown arg lists online players and up to 25 recently disconnected users (IDs **900+**). Targets: player slot, recent id (`900`…), unique name fragment (online or recently disconnected), or unique steam_id fragment; a full steam_id still works for anyone with a user file
-- `weaponid` is an item tag, or a unique fragment of the item name / short name
-- `team` is a team id (`0`–`3`), or a unique fragment of the team name / defaultName (e.g. `spec`)
-- Console chrome colors: `basewf/warfork-extended/theme.txt` (see [`configs/theme.txt.example`](configs/theme.txt.example); seeded on first run)
+   `we_dm`, `we_duel`, `we_ffa`, `we_tdm`, `we_ca`, `we_bomb`, `we_ctf`, `we_ctftactics`, `we_headhunt`, `we_race`, `we_da`, `we_rekt`, `we_tutorial`, ...
 
-## Optional features
+   Example: `set g_gametype "we_bomb"`
+5. Paste the required settings from [Configuration](#configuration) into that same config.
+6. Restart the server.
 
-| Cvar | Default | Behavior |
-|------|---------|----------|
-| `we_feature_opannounce` | `1` | On join, broadcast `[WE] <name> is an operator` for operators |
-| `we_feature_clan` | `0` | Rewrite scoreboard clan column (see clan cvars below) |
-| `we_feature_nickban` | `0` | Warn, then ban+kick players who change name too often while playing (`name change spam`) |
-| `we_feature_welcome` | `1` | Chat tip pointing new players at `we_help` |
-| `we_feature_startmap` | `1` | On server process start, change once to a random installed map from `g_maplist` (or `we_startmap_list` when set) |
-| `we_feature_ban` / `weapon` / `respawn` / `changeteam` / `awards` / `report` | `1` | Gate the matching command groups |
+If you also run a custom gametype pk3 built for this project, put that file in `basewf` too. How to build it is in [development.md](development.md).
 
-### Clan override (`we_feature_clan 1`)
+## Players
 
-| Who | Scoreboard clan |
-|-----|-----------------|
-| Operator (`op` or `we_operators`) | `we_clan_tag` (if non-empty; may include `^` color codes) |
-| Non-op whose clan matches `we_clan_reserved` (color-stripped, case-insensitive) | `-` |
-| Everyone else | real clan, or `-` if empty |
+Open the console and type the command. `we_help` lists every command available.
 
-`we_clan_tag` is a single scoreboard token (spaces stripped). Put colors in the tag itself (e.g. `^1Kandru`).
+| Command | What it does |
+|---------|--------------|
+| `we_help` | List commands |
+| `we_awards` | List the award catalog and your counts |
+| `we_report <userid> <reason>` | Report a player (alias: `report`) |
 
-## Requirements
+Report rules:
 
-- Linux
-- `make`, `zip`, `docker` (and `mv`/`cp` via coreutils)
-- Python and Go run **only** in Docker (`PY_IMAGE` / `GO_IMAGE`; container UID/GID = yours)
+- Reason must be at least 3 characters
+- You cannot report yourself
+- Wait 60 seconds between reports
+- The report is announced in chat
 
-## Build
+![we_help](images/command_we_help.png)
 
-```bash
-# optional: copy config for make dev install path
-cp config.mk.example config.mk
-# edit WARFORK_BASEWF=/path/to/basewf
+![we_awards](images/command_we_awards.png)
 
-make          # help
-make test     # Docker: Python tests, Go tests, prod pk3 smoke
-make prod     # dist/prod/gt_warfork_extended_<VERSION>.pk3 (stock GTs + WE only)
-make dev      # debug inject + copy pk3 into WARFORK_BASEWF
-make go       # dist/go/we-report-notify via Docker Go
-make go-install  # install binary + example config to /opt/we-report-notify
-```
+![report](images/command_report.png)
 
-Drop the pk3 into your server `basewf` folder (remove older `gt_warfork_extended_*.pk3` first if not using `make dev`).
+## Configuration
 
-### Custom gametypes (separate pk3)
+### Files the server writes
 
-Custom GTs live in **their own repos** and ship as a **thin pk3** that still needs this WE pk3 on the server (AngelScript includes resolve via the VFS). Build from this repo:
+Created under `basewf/warfork-extended/` on first use. The server does not write your startup config.
 
-```bash
-make custom CUSTOM_ROOT=/path/to/my-gt-repo PK3=/path/to/gt_mygt.pk3
-# optional: MODE=debug
-```
+| File | Purpose |
+|------|---------|
+| `banlist.txt` | Saved bans |
+| `report.txt` | Saved player reports |
+| `awards.txt` | Award catalog; written with defaults if missing |
+| `theme.txt` | Console colors; written with defaults if missing |
+| `users/<SteamID>.txt` | data saved about a player |
+| `recent_disconnects.txt` | Last 25 SteamIDs (used when banning someone who just left) |
 
-`CUSTOM_ROOT` must contain `progs/gametypes/<name>.gt` (+ `.as` extras). Filenames stay unprefixed. Put both pk3s in `basewf`.
+### Startup config (`server.cfg`)
 
-Custom GT repos (e.g. agungame) should run `make dev` only for their thin pk3. Install `gt_warfork_extended_*.pk3` via `make dev` in this repo — do not rely on a vendored copy of warfork-extended to deploy WE.
+Paste the lines below into the config the server runs at startup. That file is often named `server.cfg`; it may have another name on your host. Do not `exec` a second file from the gametype.
 
-Rebuild the custom pk3 when you bump WE if inject hooks / include order / `we/` paths change. Feature-only WE updates that keep the same paths usually do not need a custom rebuild. After WE adds new wrapper dispatches (e.g. `GT_ScoreboardMessage` after-hooks), rebuild custom thin pk3s.
+Full annotated copy: [`configs/warfork-extended.cfg.example`](configs/warfork-extended.cfg.example).
 
-Local one-pk3 debug (overlay into the WE zip): `make prod INCLUDE_CUSTOM=1` (uses `gamemodes/custom/`, or `CUSTOM_ROOT=…`).
+Settings that are not a feature:
 
-## Server config
+| Cvar | Default | What it does |
+|------|---------|--------------|
+| `we_enabled` | `1` | Commands run. Set `0` to turn commands off. Feature hooks use `we_feature_*` |
+| `we_debug` | `0` | Extra server console prints. Leave off |
+| `we_operators` | `""` | Comma-separated 17-digit SteamIDs. Same rights as `op <password>`. Spaces are fine |
 
-Paste cvars into your `server.cfg` (full annotated copy: [`configs/warfork-extended.cfg.example`](configs/warfork-extended.cfg.example)). Warfork-Extended does not write a config file itself.
-
-| Cvar | Default | Notes |
-|------|---------|-------|
-| `we_enabled` | `1` | Master switch |
-| `we_debug` | `0` | Extra `G_Print` on most `GT_*` wrappers (not `GT_ThinkRules`) |
-| `we_operators` | `""` | Comma-separated SteamID64 ops (17 digits; always on with `we_enabled`) |
-| `we_feature_*` | see table above | Feature toggles |
-| `we_startmap_list` | `""` | Space-separated maps for startup pick; when non-empty, ignores `g_maplist` for that pick only |
-| `we_clan_tag` | `""` | Scoreboard tag for operators when clan feature is on (`^` colors allowed) |
-| `we_clan_reserved` | `""` | Tag non-ops may not display |
-| `we_awards_center_message` / `we_awards_chat_message` | `1` | Award announcement channels |
-
-Example (clan + nickban left off until configured):
+Example (replace the SteamID with yours):
 
 ```
 set we_enabled "1"
 set we_debug "0"
-set we_operators "0000000,111111,22222"
+set we_operators "76561198000000000,76561198000000000,76561198000000000"
 set we_feature_ban "1"
 set we_feature_weapon "1"
 set we_feature_respawn "1"
@@ -148,18 +108,61 @@ set we_feature_opannounce "1"
 set we_feature_startmap "1"
 set we_startmap_list ""
 set we_feature_clan "0"
-set we_clan_tag "^1Kandru"
-set we_clan_reserved "kandru"
+set we_clan_tag ""
+set we_clan_reserved ""
 set we_feature_nickban "0"
 ```
 
-## Report webhooks
+### Bans
 
-Optional sidecar [`tools/report-notify/`](tools/report-notify/) watches one or more `report.txt` files and posts Discord webhook embeds when players file reports. It is **not** inside the pk3; run it on the host (or any machine that can read the report files).
+Bans kick the player when they join.
 
-### Config
+- `we_feature_ban` — default `1`
+- `we_kick` still works when this is `0`
 
-Copy [`tools/report-notify/config.yaml.example`](tools/report-notify/config.yaml.example) to `config.yaml` next to the binary (or pass `-config`). List `report.txt` paths; set a global webhook list and/or per-server webhooks. Discord uses `sv_hostname` from each report line (no display name in config):
+### Weapons
+
+Give, take, or strip weapons and ammo.
+
+- `we_feature_weapon` — default `1`
+
+### Respawn
+
+Force-respawn a player who is in the match. Spectators cannot be respawned.
+
+- `we_feature_respawn` — default `1`
+
+### Team change
+
+Move a player to another team. Team is a number `0`–`3` or a unique part of the team name (for example `spec`).
+
+- `we_feature_changeteam` — default `1`
+
+### Awards
+
+Track custom awards. Counts are kept on the player file.
+
+- `we_feature_awards` — default `1`
+- `we_awards_center_message` — default `1` (center print)
+- `we_awards_chat_message` — default `1` (chat)
+
+Catalog file: `basewf/warfork-extended/awards.txt` (max 32 awards). Loaded on map change. Line shape:
+
+```
+id|enabled|kind|freq|p1|p2|title|description
+```
+
+Frequency: `every`, `map`, `round` (once per match, not a bomb/CA round), or `once`. Full kinds and filters: [awards.md](awards.md). Example catalog: [`configs/awards.txt.example`](configs/awards.txt.example).
+
+### Reports
+
+Players file reports. Each report is appended to `report.txt`.
+
+- `we_feature_report` — default `1`
+
+Optional Discord watcher: [`tools/report-notify/`](tools/report-notify/). It is not inside the pk3. Releases also ship `we-report-notify-linux-amd64`.
+
+Copy [`tools/report-notify/config.yaml.example`](tools/report-notify/config.yaml.example) to `config.yaml` next to the binary (or pass `-config`):
 
 ```yaml
 webhooks:
@@ -174,27 +177,21 @@ servers:
       - "https://discord.com/api/webhooks/OTHER/TOKEN"
 ```
 
-If a server has its own `webhooks` list, that list is used instead of the global one. After every line in a file is posted, that `report.txt` is truncated. A report appended by the game during the truncate can be lost; that is accepted.
+A per-server `webhooks` list replaces the global list for that file. After every line in a file is posted, that `report.txt` is truncated. A report written during the truncate can be lost.
 
-### Install (cron)
-
-One-shot mode (`-cron`) reads the files, posts, truncates, and exits. It does not watch for changes.
+**Cron** (one-shot each minute):
 
 ```bash
-make go-install                    # PREFIX=/opt/we-report-notify
+make go-install
 sudo $EDITOR /opt/we-report-notify/config.yaml
-sudo crontab -e                    # paste tools/report-notify/crontab.example
+sudo crontab -e   # paste tools/report-notify/crontab.example
 ```
 
 ```
 * * * * * /opt/we-report-notify/we-report-notify -cron
 ```
 
-(`-once` is an alias for `-cron`.)
-
-### Install (systemd)
-
-Long-running watcher (fsnotify with poll fallback). Restarts automatically if the process exits with an error:
+**systemd** (long-running watcher):
 
 ```bash
 make go-install
@@ -202,72 +199,180 @@ sudo $EDITOR /opt/we-report-notify/config.yaml
 sudo cp tools/report-notify/we-report-notify.service.example /etc/systemd/system/we-report-notify.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now we-report-notify.service
-journalctl -u we-report-notify -f
 ```
 
-Sent reports are printed to stdout, for example:
-
-```
-sent EU DM | Alice [TAG] reported Bob [CLAN] | 7656119… -> 7656119… | score=10 frags=8 deaths=3 suicides=1 | wallhacks
-```
-
-GitHub Releases also ship `we-report-notify-linux-amd64` next to the pk3. Update an installed binary in place:
+Update an installed binary:
 
 ```bash
 /opt/we-report-notify/we-report-notify self-update
-# systemd watcher: systemctl restart we-report-notify
+# systemd: systemctl restart we-report-notify
 ```
 
-Cron (`-cron`) picks up the new binary on the next run; a long-running systemd unit keeps the old inode until restarted.
+Cron picks up the new binary on the next run. A systemd unit keeps the old binary until restarted.
 
-## Extending (features)
+### Welcome
 
-Add AngelScript under `src/we/features/<name>/`, then register in that feature's `*_Register()`:
+On join, chat tells the player to type `we_help`. Needs a SteamID.
 
-```
-WE_Hooks_AddThinkAfter( @My_Think );
-WE_Cmds_Add( "we_foo", "<userid>", "Do the foo", true, @My_Cmd );
-```
+- `we_feature_welcome` — default `1`
 
-Call your `*_Register()` from `WE_Init()` in `src/we/core/main.as`. Hook API uses AngelScript `funcdef` handles (`core/hook_types.as`).
+### Operator announce
 
-Custom gamemodes: persistent player data via `WE_GetPlayerData` / `WE_SetPlayerData` (keys stored as `cust_*`) — see [development.md](development.md).
+When an operator joins, chat shows `[WE] <name> is an operator`.
 
-1. In a **separate** repo, use the stock layout: `progs/gametypes/<name>.gt` + `.as` extras
-2. Add this repo as a submodule (or CI checkout), then:
-   `make -C path/to/warfork-extended custom CUSTOM_ROOT=$PWD PK3=$PWD/dist/gt_<name>.pk3`
-3. Install **both** `gt_warfork_extended_*.pk3` and your custom pk3 into `basewf`, then restart
+- `we_feature_opannounce` — default `1`
 
-## Version / releases
+### Start map
 
-- Bump [`VERSION`](VERSION) (semver).
-- Pushing a change to `VERSION` on `main` runs GitHub Actions: `make test`, Linux `we-report-notify` binary, then a GitHub Release with both assets and commits since the previous tag. See [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+Once per server process, load one random installed map.
 
-## Screenshots
+- `we_feature_startmap` — default `1`
+- `we_startmap_list` — default `""`. Empty means use `g_maplist`. A non-empty list is space-separated map names and is used instead of `g_maplist` for that one pick.
 
-### Command we_awards
+Maps that are not installed are skipped. If the pick is already loaded, the map stays.
 
-![we_awards](images/command_we_awards.png)
+### Clan tag
 
-### Command we_ban
+Rewrite the scoreboard clan column.
 
-![we_ban](images/command_we_ban.png)
+- `we_feature_clan` — default `0`
+- `we_clan_tag` — tag for operators (one word; spaces removed; `^` color codes kept, for example `^1Kandru`)
+- `we_clan_reserved` — tag non-operators are not allowed to have (colors ignored, case ignored)
 
-### Command we_help
+| Who | Scoreboard clan |
+|-----|-----------------|
+| Operator | `we_clan_tag` if set |
+| Non-operator whose clan matches `we_clan_reserved` | `-` |
+| Everyone else | their clan, or `-` if empty |
 
-![we_help](images/command_we_help.png)
+### Name-change ban
 
-### Command we_users
+While spawned and not spectating, a name change warns, the next warns again, the third bans and kicks with reason `name change spam`. Checked about every 11 seconds. Strikes clear when the name stays the same or the player goes to spectator. Operators and players without a SteamID are ignored.
+
+- `we_feature_nickban` — default `0`
+
+### Console colors
+
+Edit `basewf/warfork-extended/theme.txt`. Roles: `accent`, `header`, `sep`, `marker`, `body`, `success`, `error`, `warn`. Colors: `black`, `red`, `green`, `yellow`, `blue`, `cyan`, `purple`, `white`, `orange`, `gray`. Defaults: [`configs/theme.txt.example`](configs/theme.txt.example).
+
+## Administration
+
+An operator used `op <password>` or is listed in `we_operators`. Other players get “Operator privileges required.” You cannot kick, ban, or report yourself.
+
+Shared rules:
+
+- Type the command in the console.
+- `userid` is the player slot or a unique part of the name (case does not matter). If several names match, the server lists them and does nothing.
+- A missing or unknown target prints usage and a player list.
+- Kick and ban lists omit the team column. Other player lists include it.
+- `we_ban` with no match also lists up to 25 people who just left, numbered from 900. You can ban a slot, a 900+ id, a unique name, a unique SteamID fragment, or a full SteamID of someone who already has a user file.
+- Kick and ban reasons are optional. Empty becomes `no reason given`.
+- `weaponid` is an item number or a unique part of the item name. A bad or missing item prints the item list.
+- `award_id` is the id from `awards.txt` (also shown by `we_awards`).
+
+### we_users
+
+List connected players, SteamID, and team. Always available when commands are on.
 
 ![we_users](images/command_we_users.png)
 
-### Command we_weapon*
+### we_kick
+
+```
+we_kick <userid> [reason]
+```
+
+Kick a player now. Not saved. Works with bans off (`we_feature_ban 0`). The target sees the reason.
+
+### we_ban
+
+```
+we_ban <userid|name|steam_id> [reason]
+```
+
+Save the ban, kick if they are online, block them on later joins. Needs a SteamID. List is full at 256. Off with `we_feature_ban 0`.
+
+No argument (or unknown target) lists online players and recent disconnects.
+
+![we_ban](images/command_we_ban.png)
+
+### we_unban
+
+```
+we_unban [index]
+```
+
+No index prints the ban list with indexes. An index removes that row. Off with `we_feature_ban 0`.
+
+### we_weaponGive
+
+```
+we_weaponGive <userid> <weaponid>
+```
+
+Give the item, ammo, and select it if it is a weapon. Off with `we_feature_weapon 0`.
 
 ![we_weapon](images/command_we_weapon.png)
 
-### Command report
+### we_weaponRemove
 
-![report](images/command_report.png)
+```
+we_weaponRemove <userid> <weaponid>
+```
+
+Set that item count to 0. Off with `we_feature_weapon 0`.
+
+### we_weaponStrip
+
+```
+we_weaponStrip <userid>
+```
+
+Take all weapons and their ammo. Off with `we_feature_weapon 0`.
+
+### we_respawn
+
+```
+we_respawn <userid>
+```
+
+Respawn the player. The target is told. Fails for spectators. Off with `we_feature_respawn 0`.
+
+### we_changeteam
+
+```
+we_changeteam <userid> <team>
+```
+
+Move the player to a team and respawn them there. The target is told. Already on that team does nothing. A team the mode does not allow fails. A bad team name prints the team list. Off with `we_feature_changeteam 0`.
+
+### we_awardGive
+
+```
+we_awardGive <userid> <award_id>
+```
+
+Add one to that award and show the normal award messages. Ignores how often the award would grant itself. Off with `we_feature_awards 0`.
+
+### we_awardRemove
+
+```
+we_awardRemove <userid> <award_id>
+```
+
+Subtract one award count. If the count is already 0, the server says so. Off with `we_feature_awards 0`.
+
+## Build it yourself
+
+On Linux you need `make`, `zip`, and `docker`. Then:
+
+```bash
+make prod
+```
+
+Output: `dist/prod/gt_warfork_extended_<version>.pk3`.
+
+Custom gametypes, hooks, and APIs: [development.md](development.md). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
