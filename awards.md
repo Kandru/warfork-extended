@@ -34,7 +34,7 @@ Legacy 7-field lines (no `freq`; 4th field empty or numeric) still load as `freq
 | `round` | At most once per **match playtime** (cleared when playtime starts). CA/bomb intra-match rounds share one playtime → once per match there |
 | `once` | Lifetime — skip if `award_<id>` already &gt; 0 on the user file |
 
-Duration parameters (`spec_time`, `stillness`, `alive_time`, `fast_death`, `kill_then_die`, `ping_high` duration) are **seconds**.
+Duration parameters (`spec_time`, `stillness`, `alive_time`, `fast_death`, `kill_then_die`, `ping_high` duration, `multi_kill` window) are **seconds**. `range_kill` / `air_kill` distances are Quake units.
 
 ---
 
@@ -63,6 +63,9 @@ Duration parameters (`spec_time`, `stillness`, `alive_time`, `fast_death`, `kill
 | `first_blood` | unused | unused | `kill` | First non-suicide kill of this playtime |
 | `frags` | frag count | unused | `kill` | Non-suicide kills this playtime; exact threshold |
 | `speed_kill` | min horizontal speed | `WEAP_*` or `0` | `kill` | Attacker XY speed ≥ p1 (Meep Meep-style); optional weapon filter |
+| `range_kill` | min 3D distance | `WEAP_*` or `0` | `kill` | Separation between attacker and victim at the kill ≥ p1; optional weapon filter |
+| `air_kill` | min 3D distance | `WEAP_*` or `0` | `kill` | Same as `range_kill`, and the victim is airborne (`groundEntity == null`, not in water) |
+| `multi_kill` | frag count | window seconds | `kill` | That many non-suicide frags inside p2 seconds. Grants once, then the window clears. Dying clears it. p2 is seconds, not a weapon |
 | `weapon_kill` | kill count | `WEAP_*` **required** | `kill` | Non-suicide kills while attacker’s current weapon is p2 |
 | `weapon_death` | death count | attacker `WEAP_*` **required** | `kill` | Deaths to an attacker whose current weapon is p2 |
 
@@ -144,6 +147,7 @@ Unique item name / shortName / classname fragments also resolve (same idea as `w
 ## Attribution caveats
 
 - Kill / hit / damage weapon filters use **`client.weapon` at event time** (same approach as stock HUD awards). Delayed splash, mid-flight rockets, or weapon switches can mismatch the true means of death. The engine score event does **not** expose `MOD_*`.
+- `range_kill` / `air_kill` measure **3D distance at the kill**, not how far a projectile traveled. A rocket’s number is where the two players are when it lands.
 - `shots` / `hits` use engine accuracy counters for the chosen **ammo** tag — accurate for that ammo, not “weapon held”.
 - Self-damage does not count toward `dmg_dealt` / `weapon_hit`.
 
@@ -195,12 +199,10 @@ Do not load unused `key_press` awards on busy servers if you want to avoid per-f
 ## Example lines
 
 ```
-rocket_man|1|weapon_kill|round|3|rocketlauncher|Rocket Man|3 kills with the rocket launcher
-bunny|1|key_press|round|1000|jump|Bunny|Pressed jump 1000 times
-bullet_sponge|1|dmg_taken|map|500|0|Bullet Sponge|Took 500 damage
-spray|1|shots|round|100|bullets|Spray and Pray|Fired 100 machinegun bullets
-meep|1|speed_kill|every|750|0|Meep Meep|Frag while moving ≥ 750 ups
-gb_hits|1|weapon_hit|round|50|gunblade|Blade Runner|50 gunblade damage events
+long_shot|1|range_kill|every|2000|electrobolt|Long Shot|Electrobolt frag from at least 2000 units
+excellent|1|multi_kill|every|2|2|Excellent|2 frags within 2 seconds
+midair|1|air_kill|every|800|rocketlauncher|Midair|Rocket frag on an airborne player at least 800 units away
+breakneck|1|speed_kill|every|1200|0|Breakneck|Frag while moving at least 1200 ups
 ```
 
 See also [`configs/awards.txt.example`](configs/awards.txt.example).
