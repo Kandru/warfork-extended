@@ -31,6 +31,9 @@ const int WE_AWARD_KIND_HITS = 19;
 const int WE_AWARD_KIND_KEY_PRESS = 20;
 const int WE_AWARD_KIND_SPEED_KILL = 21;
 const int WE_AWARD_KIND_FRAGS = 22;
+const int WE_AWARD_KIND_RANGE_KILL = 23;
+const int WE_AWARD_KIND_AIR_KILL = 24;
+const int WE_AWARD_KIND_MULTI_KILL = 25;
 
 const int WE_AWARD_FREQ_EVERY = 0;
 const int WE_AWARD_FREQ_MAP = 1;
@@ -48,23 +51,21 @@ const String WE_AWARDS_DEFAULT =
     + "# freq: every | map | round | once — see awards.md\n"
     + "# Duration params are seconds. ping_high p2=0 = spike (re-arm below).\n"
     + "# round = once per match playtime (not CA/bomb intra-match rounds).\n"
+    + "# range_kill / air_kill p1 = minimum 3D distance (units). air_kill also needs an airborne victim.\n"
+    + "# multi_kill p1 = frag count, p2 = window seconds.\n"
     + "lag_lord|1|ping_high|every|100|60|Lag Lord|Held ping over 100 for 60 seconds\n"
-    + "dialup_diplomat|1|ping_high|round|250|0|Dial-up Diplomat|Ping spiked past 250\n"
-    + "punching_bag|1|victim_streak|map|5|0|Punching Bag|Same player killed you 5 times in a row\n"
-    + "the_student|1|revenge|map|3|0|The Student|Killed the player who got 3 consecutive kills on you\n"
-    + "couch_potato|1|spec_time|map|180|0|Couch Potato|Spectated for 3 minutes\n"
-    + "own_goal|1|suicide|round|1|0|Own Goal Enthusiast|You did that to yourself\n"
-    + "spawn_tourist|1|fast_death|round|5|0|Spawn Tourist|Died within 5 seconds of spawning\n"
-    + "glass_cannon|1|kill_then_die|every|3|0|Glass Cannon|Got a kill then died within 3 seconds\n"
-    + "living_statue|1|stillness|map|30|0|Living Statue|Stood still while alive for 30 seconds\n"
-    + "on_a_roll|1|kill_streak|round|5|0|On a Roll|5 kills without dying\n"
     + "first_blood|1|first_blood|round|0|0|First Blood|First kill of the match\n"
-    + "survivor|1|alive_time|once|120|0|Survivor|Stayed alive for 2 minutes after spawning\n"
-    + "participation|1|manual|every|0|0|Participation Trophy|Granted by an operator\n"
-    + "rocket_man|1|weapon_kill|round|3|rocketlauncher|Rocket Man|3 kills with the rocket launcher\n"
-    + "bunny|1|key_press|round|1000|jump|Bunny|Pressed jump 1000 times\n"
-    + "bullet_sponge|1|dmg_taken|map|500|0|Bullet Sponge|Took 500 damage\n"
-    + "spray|1|shots|round|100|bullets|Spray and Pray|Fired 100 machinegun bullets\n";
+    + "killing_spree|1|kill_streak|round|8|0|Killing Spree|8 kills without dying\n"
+    + "rampage|1|kill_streak|round|12|0|Rampage|12 kills without dying\n"
+    + "payback|1|revenge|round|4|0|Payback|Killed the player who got 4 consecutive kills on you\n"
+    + "breakneck|1|speed_kill|every|1200|0|Breakneck|Frag while moving at least 1200 ups\n"
+    + "long_shot|1|range_kill|every|2000|electrobolt|Long Shot|Electrobolt frag from at least 2000 units\n"
+    + "from_downtown|1|range_kill|every|1500|rocketlauncher|From Downtown|Rocket frag from at least 1500 units\n"
+    + "eagle_eye|1|range_kill|every|2500|instagun|Eagle Eye|Instagun frag from at least 2500 units\n"
+    + "excellent|1|multi_kill|every|2|2|Excellent|2 frags within 2 seconds\n"
+    + "midair|1|air_kill|every|800|rocketlauncher|Midair|Rocket frag on an airborne player at least 800 units away\n"
+    + "humiliation|1|weapon_kill|round|1|gunblade|Humiliation|Frag with the gunblade\n"
+    + "rocket_man|1|weapon_kill|round|3|rocketlauncher|Rocket Man|3 kills with the rocket launcher\n";
 
 String[] weAwardId( WE_MAX_AWARDS );
 String[] weAwardTitle( WE_MAX_AWARDS );
@@ -118,6 +119,7 @@ class WE_AwardClient
     uint aliveDoneMask;
     uint lastPressedKeys;
     int[] accum;      // per-award counters (dmg, hits, keys, weapon kills, …)
+    uint[] windowUntil; // multi_kill: levelTime when the current window ends; 0 = none
     int[] statsBase;  // accuracy baseline; -1 = unset
     bool statsReady;
 
@@ -125,6 +127,7 @@ class WE_AwardClient
     {
         this.pingSince.resize( WE_MAX_AWARDS );
         this.accum.resize( WE_MAX_AWARDS );
+        this.windowUntil.resize( WE_MAX_AWARDS );
         this.statsBase.resize( WE_MAX_AWARDS );
         this.Clear();
     }
@@ -151,6 +154,7 @@ class WE_AwardClient
         {
             this.pingSince[i] = 0;
             this.accum[i] = 0;
+            this.windowUntil[i] = 0;
             this.statsBase[i] = -1;
         }
     }
@@ -167,6 +171,7 @@ class WE_AwardClient
         for ( int i = 0; i < WE_MAX_AWARDS; i++ )
         {
             this.accum[i] = 0;
+            this.windowUntil[i] = 0;
             this.statsBase[i] = -1;
         }
     }
@@ -220,6 +225,12 @@ int WE_Awards_KindFromName( const String &in name )
         return WE_AWARD_KIND_SPEED_KILL;
     if ( name == "frags" )
         return WE_AWARD_KIND_FRAGS;
+    if ( name == "range_kill" )
+        return WE_AWARD_KIND_RANGE_KILL;
+    if ( name == "air_kill" )
+        return WE_AWARD_KIND_AIR_KILL;
+    if ( name == "multi_kill" )
+        return WE_AWARD_KIND_MULTI_KILL;
     return WE_AWARD_KIND_NONE;
 }
 
@@ -282,6 +293,12 @@ String WE_Awards_KindName( int kind )
         return "speed_kill";
     if ( kind == WE_AWARD_KIND_FRAGS )
         return "frags";
+    if ( kind == WE_AWARD_KIND_RANGE_KILL )
+        return "range_kill";
+    if ( kind == WE_AWARD_KIND_AIR_KILL )
+        return "air_kill";
+    if ( kind == WE_AWARD_KIND_MULTI_KILL )
+        return "multi_kill";
     return "?";
 }
 
@@ -336,7 +353,8 @@ int WE_Awards_FilterClass( int kind )
 {
     if ( kind == WE_AWARD_KIND_DMG_DEALT || kind == WE_AWARD_KIND_DMG_TAKEN
          || kind == WE_AWARD_KIND_WEAPON_HIT || kind == WE_AWARD_KIND_WEAPON_KILL
-         || kind == WE_AWARD_KIND_WEAPON_DEATH || kind == WE_AWARD_KIND_SPEED_KILL )
+         || kind == WE_AWARD_KIND_WEAPON_DEATH || kind == WE_AWARD_KIND_SPEED_KILL
+         || kind == WE_AWARD_KIND_RANGE_KILL || kind == WE_AWARD_KIND_AIR_KILL )
         return WE_AWARD_FILTER_WEAPON;
     if ( kind == WE_AWARD_KIND_SHOTS || kind == WE_AWARD_KIND_HITS )
         return WE_AWARD_FILTER_AMMO;
@@ -834,7 +852,10 @@ void WE_Awards_AddToBuckets( int kind, int index )
               || kind == WE_AWARD_KIND_WEAPON_KILL
               || kind == WE_AWARD_KIND_WEAPON_DEATH
               || kind == WE_AWARD_KIND_SPEED_KILL
-              || kind == WE_AWARD_KIND_FRAGS )
+              || kind == WE_AWARD_KIND_FRAGS
+              || kind == WE_AWARD_KIND_RANGE_KILL
+              || kind == WE_AWARD_KIND_AIR_KILL
+              || kind == WE_AWARD_KIND_MULTI_KILL )
         WE_Awards_AddToBucketKill( index );
 }
 
@@ -1533,6 +1554,18 @@ void WE_Awards_OnDmg( Client @attackerClient, const String &args )
     }
 }
 
+void WE_Awards_ResetMultiKill( WE_AwardClient @st )
+{
+    for ( int b = 0; b < weAwardBucketKillCount; b++ )
+    {
+        int idx = weAwardBucketKill[b];
+        if ( weAwardKind[idx] != WE_AWARD_KIND_MULTI_KILL )
+            continue;
+        st.windowUntil[idx] = 0;
+        st.accum[idx] = 0;
+    }
+}
+
 void WE_Awards_OnKill( Client @attackerClient, const String &args )
 {
     if ( !WE_Awards_InPlaytime() )
@@ -1554,6 +1587,7 @@ void WE_Awards_OnKill( Client @attackerClient, const String &args )
         return;
 
     WE_AwardClient @vst = @weAwardClients[vpn];
+    WE_Awards_ResetMultiKill( vst );
 
     bool suicide = ( @attackerClient == null || attackerClient.playerNum == victim.playerNum );
     int attackerNum = suicide ? -1 : attackerClient.playerNum;
@@ -1575,11 +1609,16 @@ void WE_Awards_OnKill( Client @attackerClient, const String &args )
 
             Entity @attackerEnt = @attackerClient.getEnt();
             float horizSpeed = 0;
+            float separation = 0;
+            bool victimAir = false;
             if ( @attackerEnt != null )
             {
                 Vec3 vel = attackerEnt.velocity;
                 vel.z = 0;
                 horizSpeed = vel.length();
+                Vec3 delta = attackerEnt.origin - victimEnt.origin;
+                separation = delta.length();
+                victimAir = ( @victimEnt.groundEntity == null && victimEnt.waterLevel == 0 );
             }
 
             for ( int b = 0; b < weAwardBucketKillCount; b++ )
@@ -1627,6 +1666,37 @@ void WE_Awards_OnKill( Client @attackerClient, const String &args )
                 {
                     if ( weAwardP1[idx] > 0 && ast.fragCount == weAwardP1[idx] )
                         WE_Awards_TryGrantIndex( attackerClient, idx );
+                }
+                else if ( kind == WE_AWARD_KIND_RANGE_KILL || kind == WE_AWARD_KIND_AIR_KILL )
+                {
+                    int needDist = weAwardP1[idx];
+                    if ( needDist <= 0 || separation < float( needDist ) )
+                        continue;
+                    if ( kind == WE_AWARD_KIND_AIR_KILL && !victimAir )
+                        continue;
+                    if ( weAwardP2[idx] != 0 && attackerWeapon != weAwardP2[idx] )
+                        continue;
+                    WE_Awards_TryGrantIndex( attackerClient, idx );
+                }
+                else if ( kind == WE_AWARD_KIND_MULTI_KILL )
+                {
+                    int needKills = weAwardP1[idx];
+                    int windowMs = weAwardP2[idx] * 1000;
+                    if ( needKills <= 0 || windowMs <= 0 )
+                        continue;
+                    if ( ast.windowUntil[idx] == 0 || levelTime > ast.windowUntil[idx] )
+                    {
+                        ast.windowUntil[idx] = levelTime + uint( windowMs );
+                        ast.accum[idx] = 1;
+                    }
+                    else
+                        ast.accum[idx]++;
+                    if ( ast.accum[idx] == needKills )
+                    {
+                        WE_Awards_TryGrantIndex( attackerClient, idx );
+                        ast.windowUntil[idx] = 0;
+                        ast.accum[idx] = 0;
+                    }
                 }
             }
         }
